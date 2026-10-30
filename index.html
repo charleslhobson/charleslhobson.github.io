@@ -1,0 +1,693 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="description" content="Charles Hobson's portfolio: hedge fund research, volunteer firefighting, an arbitrage strategy, and three game-theory training apps.">
+<meta property="og:title" content="Charles Hobson Portfolio">
+<meta property="og:description" content="Charles Hobson's portfolio: hedge fund research, volunteer firefighting, an arbitrage strategy, and three game-theory training apps.">
+<meta property="og:type" content="website">
+<meta name="theme-color" content="#F7F6F4" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#121110" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%23111111'/%3E%3Ctext x='32' y='42' font-family='Arial,Helvetica,sans-serif' font-size='28' font-weight='700' fill='%23F7F6F4' text-anchor='middle'%3ECH%3C/text%3E%3C/svg%3E">
+<style>
+:root { color-scheme: light; padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
+*, *::before, *::after { box-sizing: border-box; }
+body { margin: 0; }
+img { max-width: 100%; }
+[hidden] { display: none !important; }
+</style>
+<title>Charles Hobson Portfolio</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: a floating two-row nav over a hairline-ruled ledger: when | what was done | the number that proves it. */
+:root {
+  --bg: #F7F6F4;
+  --ink: #111111;
+  --muted: #67645E;
+  --line: #E0DDD7;
+  --line-strong: #C6C1B8;
+  --surface: #FFFFFF;
+  --tile: #ECE9E4;
+  --accent: #FE3619;
+  --accent-btn: #DC2C0D;
+  --accent-ink: #C4260B;
+  --accent-soft: #F9BFB1;
+  --on-accent: #FFFFFF;
+  --hl-bg: #151413;
+  --hl-fg: #F7F6F4;
+  --hl-label: #FF6B4E;
+  --nav-bg: rgba(232, 229, 224, 0.86);
+  --sq-a: #EEE9E0;
+  --sq-b: #CEC5B6;
+  --font-sans: "Geist", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --font-mono: "Geist Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #121110; --ink: #F3F1EC; --muted: #A39F97; --line: #2C2A26; --line-strong: #47433D;
+    --surface: #1A1917; --tile: #232120; --accent: #FF4A2B; --accent-btn: #DC2C0D; --accent-ink: #FF7C60;
+    --accent-soft: #6A2C20; --on-accent: #FFFFFF; --hl-bg: #211F1D; --hl-fg: #F3F1EC; --hl-label: #FF7C60;
+    --nav-bg: rgba(30, 28, 26, 0.86); --sq-a: #3A3732; --sq-b: #282623;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #121110; --ink: #F3F1EC; --muted: #A39F97; --line: #2C2A26; --line-strong: #47433D;
+  --surface: #1A1917; --tile: #232120; --accent: #FF4A2B; --accent-btn: #DC2C0D; --accent-ink: #FF7C60;
+  --accent-soft: #6A2C20; --on-accent: #FFFFFF; --hl-bg: #211F1D; --hl-fg: #F3F1EC; --hl-label: #FF7C60;
+  --nav-bg: rgba(30, 28, 26, 0.86); --sq-a: #3A3732; --sq-b: #282623;
+  color-scheme: dark;
+}
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  font-size: 16px;
+  line-height: 1.55;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 0 40px;
+  -webkit-font-smoothing: antialiased;
+}
+body::before {
+  content: ""; position: fixed; inset: 0 0 auto;
+  height: env(safe-area-inset-top, 0px); z-index: 30; background: var(--bg);
+}
+a { color: inherit; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 6px; }
+.wrap { max-width: 1120px; margin-inline: auto; }
+.mono-k {
+  font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.1em;
+  text-transform: uppercase; color: var(--muted);
+}
+
+/* ---------- Nav ---------- */
+.nav {
+  position: sticky; top: calc(env(safe-area-inset-top, 0px) + 12px); z-index: 20;
+  max-width: 960px; margin: 12px auto 0;
+  background: var(--nav-bg);
+  -webkit-backdrop-filter: blur(14px) saturate(1.2); backdrop-filter: blur(14px) saturate(1.2);
+  border: 1px solid var(--line); border-radius: 14px;
+}
+.nav-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 9px 9px 9px 14px; }
+.brand { display: flex; align-items: center; gap: 10px; text-decoration: none; font-weight: 500; letter-spacing: -0.01em; min-width: 0; }
+.mark {
+  font-family: var(--font-mono); font-size: 11px; font-weight: 500; letter-spacing: 0.04em; line-height: 1;
+  border: 1.5px solid var(--ink); border-radius: 4px; padding: 4px 5px;
+}
+.nav-mid { font-size: 15px; color: var(--muted); }
+.btn {
+  font-family: var(--font-mono); font-size: 12px; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase;
+  background: var(--accent-btn); color: var(--on-accent); border: 0; border-radius: 8px;
+  padding: 10px 14px; cursor: pointer; text-decoration: none; display: inline-flex; gap: 8px; align-items: center;
+  white-space: nowrap; transition: filter 0.15s;
+}
+.btn:hover { filter: brightness(1.08); }
+.tabs { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); border-top: 1px solid var(--line); }
+.tabs a { position: relative; text-align: center; text-decoration: none; font-size: 13px; padding: 10px 4px 11px; }
+.tabs a + a::before { content: ""; position: absolute; left: 0; top: 10px; bottom: 10px; width: 1px; background: var(--line-strong); }
+.tabs a[aria-current="page"] { font-weight: 600; }
+.tabs a[aria-current="page"]::after {
+  content: ""; position: absolute; left: 50%; bottom: 4px; width: 18px; height: 2px; margin-left: -9px;
+  background: var(--accent); border-radius: 2px;
+}
+@media (max-width: 640px) {
+  .nav-top { flex-wrap: wrap; row-gap: 8px; }
+  .nav-mid {
+    order: 3; flex-basis: calc(100% + 23px); margin-inline: -14px -9px; padding-top: 8px; border-top: 1px solid var(--line);
+    text-align: center; font-family: var(--font-mono); font-size: 10.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink);
+  }
+}
+
+/* ---------- Hero ---------- */
+.hero { padding-block: 72px 40px; display: grid; gap: 22px; }
+.sub { margin: -4px 0 0; font-size: clamp(20px, 2.6vw, 28px); letter-spacing: -0.02em; color: var(--muted); }
+.eyebrow { margin: 0; font-family: var(--font-mono); font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent-ink); }
+h1 { margin: 0; font-size: clamp(54px, 10.5vw, 116px); font-weight: 500; letter-spacing: -0.045em; line-height: 0.92; text-wrap: balance; }
+/* ---------- Sections & ledger rows ---------- */
+h2 { margin: 0; font-size: clamp(30px, 4.6vw, 50px); font-weight: 500; letter-spacing: -0.035em; line-height: 1; text-wrap: balance; }
+.cats { border-top: 1.5px solid var(--ink); }
+.cat { border-bottom: 1px solid var(--line); }
+.cat-head {
+  list-style: none; cursor: pointer; display: flex; align-items: center; justify-content: space-between; gap: 20px;
+  padding-block: 28px; scroll-margin-top: 130px;
+}
+.cat-head::-webkit-details-marker { display: none; }
+.cat-title { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 20px; min-width: 0; }
+.cat-head h2 { transition: color 0.15s; }
+.cat-head:hover h2 { color: var(--accent-ink); }
+.cat-head .chev { flex: none; width: 13px; height: 13px; color: var(--accent-ink); }
+.cat[open] > .cat-head { border-bottom: 1.5px solid var(--ink); }
+.cat[open] > .cat-head .chev { transform: translateY(3px) rotate(225deg); }
+.cat-body { padding-bottom: 36px; }
+.cat-body > .row:last-child { border-bottom: 0; }
+
+.cols, .row { display: grid; grid-template-columns: 11rem minmax(0, 1fr); gap: 14px 40px; }
+.cols { padding-block: 10px; border-bottom: 1px solid var(--line); }
+.row { padding-block: 30px; border-bottom: 1px solid var(--line); }
+.meta { display: grid; gap: 4px; align-content: start; padding-top: 6px; font-family: var(--font-mono); font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+.meta .when { color: var(--ink); }
+.main { display: grid; gap: 12px; align-content: start; min-width: 0; }
+h3 { margin: 0; font-size: 25px; font-weight: 500; letter-spacing: -0.022em; line-height: 1.15; text-wrap: balance; }
+.role { margin: 0; color: var(--muted); display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; }
+.note {
+  font-family: var(--font-mono); font-size: 10.5px; letter-spacing: 0.08em; text-transform: uppercase;
+  border: 1px solid var(--line-strong); border-radius: 999px; padding: 3px 8px; color: var(--ink); white-space: nowrap;
+}
+.note.hot { border-color: var(--accent-ink); color: var(--accent-ink); }
+.pts { margin: 0; padding: 0; list-style: none; display: grid; gap: 8px; max-width: 68ch; }
+.pts li { position: relative; padding-left: 20px; text-wrap: pretty; }
+.pts li::before { content: ""; position: absolute; left: 0; top: 0.72em; width: 8px; height: 2px; background: var(--accent); }
+.tags { display: flex; flex-wrap: wrap; gap: 6px; }
+.tag { font-family: var(--font-mono); font-size: 10.5px; letter-spacing: 0.07em; text-transform: uppercase; background: var(--tile); border-radius: 6px; padding: 4px 8px; }
+.link-out {
+  justify-self: start; display: inline-flex; align-items: center; gap: 8px; text-decoration: none;
+  font-family: var(--font-mono); font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent-ink);
+  border-bottom: 1.5px solid currentColor; padding-bottom: 2px;
+}
+.link-out:hover { color: var(--ink); }
+@media (max-width: 860px) {
+  .cols { display: none; }
+  .row { grid-template-columns: minmax(0, 1fr); gap: 14px; padding-block: 26px; }
+  .meta { display: flex; flex-wrap: wrap; gap: 4px 14px; padding-top: 0; }
+  h3 { font-size: 23px; }
+}
+
+/* ---------- Coding builds ---------- */
+.builds { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; padding-top: 28px; }
+@media (max-width: 920px) { .builds { grid-template-columns: minmax(0, 1fr); } }
+.build { display: grid; grid-template-rows: auto 1fr; min-width: 0; background: var(--surface); border: 1px solid var(--line); border-radius: 16px; overflow: hidden; }
+.viz { height: 250px; display: grid; place-items: center; padding: 16px; background: var(--tile); border-bottom: 1px solid var(--line); }
+.build-body { display: grid; gap: 10px; align-content: start; padding: 20px 20px 22px; }
+.build-body h3 { font-size: 22px; }
+.build-body p { margin: 0; }
+.build-body .aside { font-size: 14px; color: var(--muted); }
+
+.bj { display: grid; gap: 14px; justify-items: center; }
+.bj-cards { display: flex; gap: 8px; }
+.bj-col { display: grid; gap: 6px; justify-items: center; }
+.pcard {
+  width: 38px; height: 54px; border-radius: 6px; background: var(--surface); border: 1px solid var(--line-strong);
+  position: relative; display: grid; place-items: center; font-size: 20px; line-height: 1;
+}
+.pcard .rk { position: absolute; top: 4px; left: 5px; font-size: 12px; font-weight: 600; }
+.pcard.red { color: var(--accent-ink); }
+.hv { font-family: var(--font-mono); font-size: 12px; color: var(--muted); }
+.hv.pos { color: var(--ink); }
+.readout { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px 14px; font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+.readout b { color: var(--ink); font-weight: 500; }
+.readout b.acc { color: var(--on-accent); background: var(--accent-btn); border-radius: 4px; padding: 1px 5px; }
+
+.poker { display: grid; gap: 10px; justify-items: center; width: 100%; }
+.range { display: grid; grid-template-columns: repeat(13, minmax(0, 1fr)); gap: 2px; width: min(100%, 186px); }
+.range i { aspect-ratio: 1; border-radius: 2px; background: var(--surface); }
+.range i.r { background: var(--accent); }
+.range i.c { background: var(--accent-soft); }
+.legend { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px 12px; font-family: var(--font-mono); font-size: 10.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+.legend span { display: inline-flex; align-items: center; gap: 5px; }
+.legend i { width: 9px; height: 9px; border-radius: 2px; background: var(--surface); }
+.legend i.r { background: var(--accent); }
+.legend i.c { background: var(--accent-soft); }
+
+.chess { display: grid; gap: 12px; justify-items: center; width: 100%; }
+.board { container-type: inline-size; width: min(100%, 288px); display: grid; grid-template-columns: repeat(8, minmax(0, 1fr)); border: 1px solid var(--line-strong); border-radius: 6px; overflow: hidden; }
+.sq { aspect-ratio: 1; display: grid; place-items: center; font-size: 9cqi; line-height: 1; color: var(--ink); background: var(--sq-a); font-family: "Segoe UI Symbol", "Apple Symbols", "Noto Sans Symbols 2", "DejaVu Sans", sans-serif; }
+.sq.d { background: var(--sq-b); }
+.files { width: min(100%, 288px); display: grid; grid-template-columns: repeat(8, minmax(0, 1fr)); text-align: center; font-family: var(--font-mono); font-size: 10px; color: var(--muted); margin-top: -6px; }
+.chess-bar { display: flex; align-items: center; gap: 12px; font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+.chess-bar b { color: var(--ink); font-weight: 500; font-variant-numeric: tabular-nums; }
+.mini-btn {
+  font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink);
+  background: var(--surface); border: 1px solid var(--line-strong); border-radius: 6px; padding: 5px 9px; cursor: pointer;
+}
+.mini-btn:hover { border-color: var(--ink); }
+
+/* ---------- Secondary views ---------- */
+.view-head { display: grid; gap: 16px; padding-block: 64px 20px; max-width: 46rem; }
+
+.dd { border: 1px solid var(--line-strong); border-radius: 14px; background: var(--surface); }
+.dd summary {
+  list-style: none; cursor: pointer; display: flex; align-items: center; justify-content: space-between; gap: 16px;
+  padding: 18px 20px; border-radius: 14px;
+}
+.dd summary::-webkit-details-marker { display: none; }
+.dd-title { display: grid; gap: 4px; min-width: 0; }
+.dd-title strong { font-size: 20px; font-weight: 500; letter-spacing: -0.015em; }
+.dd-cta { display: inline-flex; align-items: center; gap: 10px; font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent-ink); white-space: nowrap; }
+.chev { width: 10px; height: 10px; border-right: 2px solid currentColor; border-bottom: 2px solid currentColor; transform: translateY(-3px) rotate(45deg); transition: transform 0.2s; }
+.dd[open] .chev { transform: translateY(2px) rotate(225deg); }
+.dd[open] .dd-cta .when-closed, .dd:not([open]) .dd-cta .when-open { display: none; }
+.dd[open] summary { border-bottom: 1px solid var(--line); border-radius: 14px 14px 0 0; }
+
+.pdf { padding: clamp(10px, 3vw, 32px); background: var(--tile); border-radius: 0 0 14px 14px; }
+.pdf-actions { display: flex; justify-content: flex-end; max-width: 850px; margin: 0 auto 12px; }
+.pdf img { display: block; width: 100%; max-width: 850px; height: auto; margin-inline: auto; background: #FFFFFF; border: 1px solid var(--line); border-radius: 4px; box-shadow: 0 8px 28px rgba(0, 0, 0, 0.12); }
+
+.link-card {
+  display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: end; gap: 10px 24px;
+  padding: clamp(22px, 4vw, 36px); border: 1.5px solid var(--ink); border-radius: 18px; text-decoration: none;
+  background: var(--surface); transition: background 0.2s, color 0.2s;
+}
+.link-card:hover { background: var(--ink); color: var(--bg); }
+.link-card:hover .mono-k { color: var(--bg); }
+.link-card .lc-t { display: block; margin-top: 10px; font-size: clamp(26px, 4.4vw, 44px); font-weight: 500; letter-spacing: -0.03em; line-height: 1.05; }
+.link-card .arrow { font-size: clamp(32px, 5vw, 52px); line-height: 1; color: var(--accent); }
+.link-url { margin-top: 16px; font-family: var(--font-mono); font-size: 13px; color: var(--muted); overflow-wrap: anywhere; }
+
+.video-frame {
+  position: relative; display: grid; place-items: center; aspect-ratio: 16 / 9; max-width: 100%;
+  border-radius: 18px; background: var(--hl-bg); color: var(--hl-fg); text-decoration: none; overflow: hidden;
+}
+.video-frame .inner { display: grid; justify-items: center; gap: 18px; padding: 20px; text-align: center; }
+.play { width: 84px; height: 84px; border-radius: 50%; background: var(--accent-btn); display: grid; place-items: center; }
+.play::after { content: ""; margin-left: 6px; border-left: 24px solid var(--on-accent); border-top: 15px solid transparent; border-bottom: 15px solid transparent; }
+.video-frame.is-empty .play { background: transparent; border: 2px dashed var(--hl-label); }
+.video-frame.is-empty .play::after { border-left-color: var(--hl-label); }
+.video-frame .cap { font-family: var(--font-mono); font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--hl-label); }
+a.video-frame:hover .play { filter: brightness(1.1); }
+
+/* ---------- Footer ---------- */
+.foot { margin-top: 96px; padding-top: 20px; border-top: 1px solid var(--line); display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px 28px; font-size: 14px; color: var(--muted); }
+.foot .brand { color: var(--ink); }
+.foot .mail { display: inline-flex; align-items: center; gap: 10px; }
+.sel { color: var(--ink); user-select: all; -webkit-user-select: all; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { transition: none !important; scroll-behavior: auto !important; }
+}
+</style>
+</head>
+<body>
+<header class="nav" aria-label="Site">
+  <div class="nav-top">
+    <a class="brand" href="#portfolio"><span class="mark">CH</span><span>Charles Hobson</span></a>
+    <span class="nav-mid">Horowitz Andreessen Academy Application</span>
+    <button class="btn" id="copy-email" type="button">Copy email</button>
+  </div>
+  <nav class="tabs" aria-label="Pages">
+    <a href="#portfolio" data-tab="portfolio">Portfolio</a>
+    <a href="#resume" data-tab="resume">Resume</a>
+    <a href="#linkedin" data-tab="linkedin">LinkedIn</a>
+    <a href="#video" data-tab="video">Video</a>
+  </nav>
+</header>
+
+<!-- ================= PORTFOLIO ================= -->
+<main class="wrap" data-view="portfolio">
+  <section class="hero">
+    <p class="eyebrow">Portfolio · New Canaan, CT</p>
+    <h1>Charles Hobson</h1>
+    <p class="sub">Sophomore @ Boston University</p>
+  </section>
+
+  <div class="cats">
+
+  <!-- 1. Work Experience -->
+  <details class="cat" data-section="work">
+    <summary class="cat-head"><span class="cat-title"><h2>Work Experience</h2></span><span class="chev" aria-hidden="true"></span></summary>
+    <div class="cat-body">
+    <div class="cols" aria-hidden="true"><span class="mono-k">When / Where</span><span class="mono-k">What</span></div>
+
+    <article class="row">
+      <div class="meta"><span class="when">Fall 2026</span><span>Stamford, CT · Remote</span></div>
+      <div class="main">
+        <h3>Clear Harbor Asset Management</h3>
+        <p class="role">Hedge Fund Fall Analyst <span class="note hot">Return offer</span></p>
+        <ul class="pts">
+          <li>Sourced and researched short ideas in structurally flawed, low-AUM ETFs. The shorts drove $5M in notional exposure for a PM managing a $100M long/short equity portfolio.</li>
+          <li>Built a web-based program that calculates theoretical borrow rates for ETFs from their latest holdings and compares them with quoted rates to flag mispriced borrow.</li>
+          <li>Automated factor analysis of the shorts to size positions toward the PM's target exposures, given liquidity and borrow.</li>
+        </ul>
+      </div>
+    </article>
+
+    <article class="row">
+      <div class="meta"><span class="when">Summer 2026</span><span>Stamford, CT</span></div>
+      <div class="main">
+        <h3>Clear Harbor Asset Management</h3>
+        <p class="role">Hedge Fund Summer Analyst</p>
+        <ul class="pts">
+          <li>Researched rare earths, space, crypto and six public equities; wrote recommendations that drove $8M in notional exposure.</li>
+          <li>Built a systematic betting-against-beta strategy that cut expected hedge drag by 40% at the target beta exposure.</li>
+          <li>Screened closed-end funds and holding companies trading at NAV discounts for arbitrage, targeting discount mean reversion and corporate-action catalysts.</li>
+        </ul>
+      </div>
+    </article>
+
+    <article class="row">
+      <div class="meta"><span class="when">Summer 2025</span><span>Ridgefield, CT</span></div>
+      <div class="main">
+        <h3>Morgan Stanley</h3>
+        <p class="role">Wealth Management Intern</p>
+        <ul class="pts">
+          <li>Supported management of 250 client portfolios totaling $300M+ in assets, helping with investment strategy and execution.</li>
+          <li>Researched equities and alternative investments to inform advisor recommendations.</li>
+          <li>Monitored risk factors and supported compliance by building client-facing financial reports and presentations.</li>
+        </ul>
+      </div>
+    </article>
+
+    <article class="row">
+      <div class="meta"><span class="when">Summer 2025</span><span>Virtual</span></div>
+      <div class="main">
+        <h3>Juppiomenz</h3>
+        <p class="role">Marketing Intern <span class="note">Alongside Morgan Stanley, full time</span></p>
+        <ul class="pts">
+          <li>Analyzed gaming-influencer engagement metrics to pick the top candidates for a targeted marketing campaign.</li>
+          <li>Built financial models forecasting in-app purchases to inform monetization strategy and revenue projections.</li>
+        </ul>
+      </div>
+    </article>
+
+    <article class="row">
+      <div class="meta"><span class="when">Summer 2024</span><span>Stamford, CT</span></div>
+      <div class="main">
+        <h3>Absolute Value Management (AVM)</h3>
+        <p class="role">Property Manager / Handyman</p>
+        <ul class="pts">
+          <li>Handled maintenance, repairs and tenant move-ins across 50+ residential and commercial properties.</li>
+        </ul>
+      </div>
+    </article>
+    </div>
+  </details>
+
+  <!-- 2. Volunteering -->
+  <details class="cat" data-section="volunteering">
+    <summary class="cat-head"><span class="cat-title"><h2>Volunteering</h2></span><span class="chev" aria-hidden="true"></span></summary>
+    <div class="cat-body">
+    <div class="cols" aria-hidden="true"><span class="mono-k">When / Where</span><span class="mono-k">What</span></div>
+
+    <article class="row">
+      <div class="meta"><span class="when">Summer 2024 – Present</span><span>New Canaan, CT</span></div>
+      <div class="main">
+        <h3>Firefighting · New Canaan Fire Company</h3>
+        <p class="role">Volunteer Firefighter &amp; Vice Treasurer</p>
+        <ul class="pts">
+          <li>Completed 1,000+ hours of duty and training and responded to 300+ calls, including fire, medical and vehicle emergencies.</li>
+          <li>Manage a $100K+ annual operating budget, monitor spending variances and prepare monthly cash-flow reports.</li>
+          <li>Digitized five years of financial records, improving access to donation data and finding uncashed checks.</li>
+          <li>Earned certifications in Firefighter I, Hazmat Operations &amp; Weapons of Mass Destruction, and CPR/AED/First Aid.</li>
+        </ul>
+      </div>
+    </article>
+
+    <article class="row">
+      <div class="meta"><span class="when">Summers 2023 &amp; 2024</span><span>New Canaan, CT</span></div>
+      <div class="main">
+        <h3>Ukraine Camp · Connecticut Institute for Refugees and Immigrants</h3>
+        <p class="role">Program Coordinator &amp; Director</p>
+        <ul class="pts">
+          <li>Coordinated a summer camp for 40 Ukrainian immigrant children, running logistics and leading educational activities.</li>
+        </ul>
+      </div>
+    </article>
+
+    <article class="row">
+      <div class="meta"><span class="when">Summers 2021, 2022 &amp; 2023</span></div>
+      <div class="main">
+        <h3>Camp Counseling</h3>
+        <ul class="pts">
+          <li>Volunteered as a sports camp counselor for children aged 4–6.</li>
+        </ul>
+      </div>
+    </article>
+    </div>
+  </details>
+
+  <!-- 3. College Personal Projects -->
+  <details class="cat" data-section="college">
+    <summary class="cat-head"><span class="cat-title"><h2>College Personal Projects</h2></span><span class="chev" aria-hidden="true"></span></summary>
+    <div class="cat-body">
+    <div class="cols" aria-hidden="true"><span class="mono-k">When</span><span class="mono-k">What</span></div>
+
+    <article class="row">
+      <div class="meta"><span class="when">Aug 2025 – Present</span><span>Self-run</span></div>
+      <div class="main">
+        <h3>Credit Card Casino Statistical Arbitrage</h3>
+        <ul class="pts">
+          <li>Ran a statistical arbitrage strategy across online social casinos and sportsbooks, stacking mispricings, promotional offers and credit card cashback. Scaled to $15,000 in peak monthly profit.</li>
+          <li>Built a risk management process that kept a 100% weekly win rate with zero drawdowns.</li>
+          <li>Scaled the operation across 9 beards, and used agentic AI to automate daily reward collection and redemption playthrough for every account across 30 sites each.</li>
+        </ul>
+        <a class="link-out" href="https://lnkd.in/p/g-z8a6js" target="_blank" rel="noopener">Example of strategy <span aria-hidden="true">↗</span></a>
+      </div>
+    </article>
+
+    <article class="row">
+      <div class="meta"><span class="when">Summer 2021 – Present</span><span>Self-run</span></div>
+      <div class="main">
+        <h3>Personal Investing</h3>
+        <ul class="pts">
+          <li>Ran a market-neutral portfolio built on Modern Portfolio Theory, combining sleeves of uncorrelated assets: bonds, gold, weather derivatives, quantitative strategies, crypto, currency carry, fundamentally managed ETFs, factor bets, merger arbitrage funds, REITs, inflation-protection assets and private companies.</li>
+          <li>Hedged with negative-beta betting-against-beta strategies and short-dated, deep out-of-the-money index puts, adding convexity for when assets began moving together.</li>
+          <li>Levered the portfolio to a target volatility using short box spreads for the lowest borrowing cost.</li>
+          <li>Set each sleeve's allocation with mean-variance optimization, using historical returns plus discretionary forecasts of future risk, return and correlation, to maximize the forward-looking Sharpe ratio.</li>
+        </ul>
+      </div>
+    </article>
+    </div>
+  </details>
+
+  <!-- 4. Recent Coding Projects -->
+  <details class="cat" data-section="coding">
+    <summary class="cat-head"><span class="cat-title"><h2>Recent Coding Projects</h2></span><span class="chev" aria-hidden="true"></span></summary>
+    <div class="cat-body">
+    <div class="builds">
+      <article class="build">
+        <div class="viz" aria-label="Example Hi-Lo count: running count plus 4 with 2 decks left gives a true count of plus 2">
+          <div class="bj">
+            <div class="bj-cards">
+              <div class="bj-col"><div class="pcard"><span class="rk">6</span>&#x2663;&#xFE0E;</div><span class="hv pos">+1</span></div>
+              <div class="bj-col"><div class="pcard red"><span class="rk">4</span>&#x2665;&#xFE0E;</div><span class="hv pos">+1</span></div>
+              <div class="bj-col"><div class="pcard"><span class="rk">3</span>&#x2660;&#xFE0E;</div><span class="hv pos">+1</span></div>
+              <div class="bj-col"><div class="pcard red"><span class="rk">K</span>&#x2666;&#xFE0E;</div><span class="hv">−1</span></div>
+              <div class="bj-col"><div class="pcard"><span class="rk">5</span>&#x2663;&#xFE0E;</div><span class="hv pos">+1</span></div>
+              <div class="bj-col"><div class="pcard red"><span class="rk">2</span>&#x2665;&#xFE0E;</div><span class="hv pos">+1</span></div>
+            </div>
+            <div class="readout"><span>Running <b>+4</b></span><span>Decks left <b>2.0</b></span><span>True <b class="acc">+2</b></span></div>
+          </div>
+        </div>
+        <div class="build-body">
+          <h3>Blackjack Card-Counting Trainer</h3>
+          <p>Drills Hi-Lo true counts, basic strategy and count-based deviations with real-time feedback.</p>
+          <div class="tags"><span class="tag">Hi-Lo</span><span class="tag">Basic strategy</span><span class="tag">Deviations</span></div>
+          <a class="link-out" href="projects/hi-lo-trainer.html" target="_blank" rel="noopener">Try it ↗</a>
+        </div>
+      </article>
+
+      <article class="build">
+        <div class="viz" aria-label="Illustrative 13 by 13 poker starting-hand grid">
+          <div class="poker">
+            <div class="range" id="range-grid"></div>
+            <div class="legend"><span><i class="r"></i>Raise</span><span><i class="c"></i>Call</span><span><i></i>Fold</span></div>
+          </div>
+        </div>
+        <div class="build-body">
+          <h3>GTO Poker Trainer</h3>
+          <p>Benchmarks every decision against game-theory-optimal strategy and pinpoints recurring leaks.</p>
+          <div class="tags"><span class="tag">Game theory</span><span class="tag">Range analysis</span><span class="tag">Leak finder</span></div>
+          <a class="link-out" href="projects/range-lab.html" target="_blank" rel="noopener">Try it ↗</a>
+        </div>
+      </article>
+
+      <article class="build">
+        <div class="viz">
+          <div class="chess">
+            <div class="board" id="board" aria-label="Chess960 starting back rank">
+              <span class="sq d">&#x265E;&#xFE0E;</span><span class="sq">&#x265B;&#xFE0E;</span><span class="sq d">&#x265D;&#xFE0E;</span><span class="sq">&#x265C;&#xFE0E;</span><span class="sq d">&#x265A;&#xFE0E;</span><span class="sq">&#x265D;&#xFE0E;</span><span class="sq d">&#x265E;&#xFE0E;</span><span class="sq">&#x265C;&#xFE0E;</span>
+            </div>
+            <div class="files" aria-hidden="true"><span>a</span><span>b</span><span>c</span><span>d</span><span>e</span><span>f</span><span>g</span><span>h</span></div>
+            <div class="chess-bar"><span>Position <b id="sp-num">214</b> of 960</span><button class="mini-btn" id="shuffle" type="button">Shuffle</button></div>
+          </div>
+        </div>
+        <div class="build-body">
+          <h3>Fischer Random Chess</h3>
+          <p>Chess960 against an engine with adjustable strength, plus a post-game analyzer that grades every move.</p>
+          <p class="aside">Peak rating: 1935 in Chess.com Rapid.</p>
+          <div class="tags"><span class="tag">Chess960</span><span class="tag">Engine</span><span class="tag">Move grading</span></div>
+          <a class="link-out" href="projects/chess960.html" target="_blank" rel="noopener">Try it ↗</a>
+        </div>
+      </article>
+    </div>
+    </div>
+  </details>
+
+  <!-- 5. High School Personal Projects -->
+  <details class="cat" data-section="highschool">
+    <summary class="cat-head"><span class="cat-title"><h2>High School Personal Projects</h2></span><span class="chev" aria-hidden="true"></span></summary>
+    <div class="cat-body">
+    <div class="cols" aria-hidden="true"><span class="mono-k">When</span><span class="mono-k">What</span></div>
+
+    <article class="row">
+      <div class="meta"><span class="when">High school</span></div>
+      <div class="main">
+        <h3>Fitness Influencing</h3>
+        <ul class="pts">
+          <li>Grew a personal fitness TikTok account to over 9,000 followers by posting instructional lifting videos and nutrition content.</li>
+          <li>Provided pro bono coaching to 20+ individuals, designing bespoke programs tailored to their goals, schedules, access to equipment, and physical abilities and limitations.</li>
+        </ul>
+      </div>
+    </article>
+
+    <article class="row">
+      <div class="meta"><span class="when">High school</span></div>
+      <div class="main">
+        <h3>Competitive Video Gaming</h3>
+        <ul class="pts">
+          <li>Reached the top 20 in Valorant.</li>
+          <li>Earned $10,000+ in Fortnite through tournaments and wagers.</li>
+          <li>Ranked as a top-5 player in the online version of the board game Risk.</li>
+          <li>Peaked at 1935 in Chess.com Rapid (15+10 time control).</li>
+          <li>Reached the highest attainable rank in Overwatch, Counter-Strike, Apex Legends and Clash Royale.</li>
+          <li>Formerly held the 2nd-place world record for highest quota in Lethal Company.</li>
+        </ul>
+      </div>
+    </article>
+    </div>
+  </details>
+  </div>
+</main>
+
+<!-- ================= RESUME ================= -->
+<main class="wrap" data-view="resume" hidden>
+  <div class="view-head">
+    <p class="eyebrow">Resume</p>
+  </div>
+  <details class="dd" id="resume-dd">
+    <summary>
+      <span class="dd-title"><span class="mono-k">Resume · October 2026</span><strong>Charles Hobson</strong></span>
+      <span class="dd-cta"><span class="when-closed">Show resume</span><span class="when-open">Hide resume</span><span class="chev" aria-hidden="true"></span></span>
+    </summary>
+    <div class="pdf">
+      <p class="pdf-actions"><a class="link-out" href="resume.pdf" download="Charles_Hobson_Resume.pdf">Download PDF ↓</a></p>
+      <img src="resume.png" width="1700" height="2200" alt="Charles Hobson's resume, October 2026: education at Boston University and Elon University, work at Clear Harbor Asset Management, Morgan Stanley, Juppiomenz and Absolute Value Management, volunteer service with the New Canaan Fire Company and the Connecticut Institute for Refugees and Immigrants, personal projects and skills.">
+    </div>
+  </details>
+</main>
+
+<!-- ================= LINKEDIN ================= -->
+<main class="wrap" data-view="linkedin" hidden>
+  <div class="view-head">
+    <p class="eyebrow">LinkedIn</p>
+  </div>
+  <a class="link-card" href="https://www.linkedin.com/in/Charles-Hobson" target="_blank" rel="noopener">
+    <span><span class="mono-k">Opens in a new tab</span><span class="lc-t">Charles Hobson on LinkedIn</span></span>
+    <span class="arrow" aria-hidden="true">↗</span>
+  </a>
+  <p class="link-url">linkedin.com/in/Charles-Hobson</p>
+</main>
+
+<!-- ================= VIDEO ================= -->
+<main class="wrap" data-view="video" hidden>
+  <div class="view-head">
+    <p class="eyebrow">Video</p>
+  </div>
+  <a class="video-frame" id="video-link" href="#video" target="_blank" rel="noopener" hidden>
+    <span class="inner"><span class="play" aria-hidden="true"></span><span class="cap">Watch on YouTube ↗</span></span>
+  </a>
+  <div class="video-frame is-empty" id="video-empty">
+    <span class="inner"><span class="play" aria-hidden="true"></span><span class="cap">Video link coming soon</span></span>
+  </div>
+</main>
+
+<footer class="wrap foot">
+  <span class="brand"><span class="mark">CH</span><span>Charles Hobson</span></span>
+  <span class="mail"><span class="mono-k">Email</span><span class="sel" id="email-text">CharlesLHobson@gmail.com</span></span>
+  <span>New Canaan, CT · Updated October 2026</span>
+</footer>
+
+<script>
+(function () {
+  // Paste the YouTube link here when it is ready.
+  var VIDEO_URL = "";
+  var EMAIL = "CharlesLHobson@gmail.com";
+  var VIEWS = ["portfolio", "resume", "linkedin", "video"];
+  var reduce = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  function route(scroll) {
+    var v = (location.hash || "").slice(1);
+    if (VIEWS.indexOf(v) === -1) v = "portfolio";
+    document.querySelectorAll("[data-view]").forEach(function (el) { el.hidden = el.getAttribute("data-view") !== v; });
+    document.querySelectorAll(".tabs a").forEach(function (a) {
+      if (a.getAttribute("data-tab") === v) a.setAttribute("aria-current", "page");
+      else a.removeAttribute("aria-current");
+    });
+    if (scroll) window.scrollTo(0, 0);
+  }
+  window.addEventListener("hashchange", function () { route(true); });
+  route(false);
+
+  // Copy email
+  var btn = document.getElementById("copy-email");
+  function flash(text) {
+    btn.textContent = text;
+    clearTimeout(btn._t);
+    btn._t = setTimeout(function () { btn.textContent = "Copy email"; }, 1800);
+  }
+  function selectEmail() {
+    var el = document.getElementById("email-text");
+    try {
+      var r = document.createRange(); r.selectNodeContents(el);
+      var s = window.getSelection(); s.removeAllRanges(); s.addRange(r);
+    } catch (e) {}
+    el.scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "center" });
+    flash("Email selected");
+  }
+  btn.addEventListener("click", function () {
+    try {
+      navigator.clipboard.writeText(EMAIL).then(function () { flash("Copied"); }, selectEmail);
+    } catch (e) { selectEmail(); }
+  });
+
+  // Video link
+  if (VIDEO_URL) {
+    var link = document.getElementById("video-link");
+    link.href = VIDEO_URL; link.hidden = false;
+    document.getElementById("video-empty").hidden = true;
+  }
+
+  // Illustrative poker range grid
+  var R = "AKQJT98765432", grid = document.getElementById("range-grid");
+  for (var i = 0; i < 13; i++) {
+    for (var j = 0; j < 13; j++) {
+      var act, hand;
+      if (i === j) { act = i <= 9 ? "r" : "c"; hand = R[i] + R[j]; }
+      else if (i < j) { act = (i === 0 || (i <= 2 && j <= 7)) ? "r" : (i <= 4 && j <= 9) ? "c" : "f"; hand = R[i] + R[j] + "s"; }
+      else { act = ((j === 0 && i <= 4) || (j === 1 && i <= 3)) ? "r" : (j <= 3 && i <= 5) ? "c" : "f"; hand = R[j] + R[i] + "o"; }
+      var c = document.createElement("i");
+      if (act !== "f") c.className = act;
+      c.title = hand;
+      grid.appendChild(c);
+    }
+  }
+
+  // Chess960 start positions (standard numbering 0-959)
+  var KN = ["NN---", "N-N--", "N--N-", "N---N", "-NN--", "-N-N-", "-N--N", "--NN-", "--N-N", "---NN"];
+  var GLYPH = { K: "♚", Q: "♛", R: "♜", B: "♝", N: "♞" };
+  function empties(a) { var out = []; for (var k = 0; k < 8; k++) if (!a[k]) out.push(k); return out; }
+  function position(n) {
+    var a = new Array(8).fill(null);
+    a[(n % 4) * 2 + 1] = "B"; n = Math.floor(n / 4);
+    a[(n % 4) * 2] = "B"; n = Math.floor(n / 4);
+    a[empties(a)[n % 6]] = "Q"; n = Math.floor(n / 6);
+    var e = empties(a), pat = KN[n];
+    for (var k = 0; k < 5; k++) if (pat[k] === "N") a[e[k]] = "N";
+    e = empties(a); a[e[0]] = "R"; a[e[1]] = "K"; a[e[2]] = "R";
+    return a;
+  }
+  var board = document.getElementById("board"), spNum = document.getElementById("sp-num");
+  document.getElementById("shuffle").addEventListener("click", function () {
+    var n = Math.floor(Math.random() * 960), a = position(n);
+    board.querySelectorAll(".sq").forEach(function (sq, k) { sq.textContent = GLYPH[a[k]] + "︎"; });
+    spNum.textContent = n;
+  });
+})();
+</script>
+</body>
+</html>
