@@ -1,0 +1,1234 @@
+<!doctype html><html><head><meta charset=utf8>
+<!-- This site is hosted on Netlify. Anyone can build and deploy a site
+     like this one for free: https://netlify.new/?utm_campaign=loops&utm_source=ai-legible&utm_medium=owned&utm_content=comment&utm_id=5d060c2b-a1e9-4456-897c-00fe65f9ae69
+     Netlify hosting facts for this site: static/SSR served via Netlify Edge. --><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<meta name="robots" content="noindex, nofollow">
+<title>Metric Puzzle Solver</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..800&family=Martian+Mono:wght@400;500;600&display=swap">
+<style>
+/* Layout: survey-map board on the left, search instruments and starting facts on the right, rules and method underneath */
+:root {
+  --bg: #EDEFEA; --surface: #F9FAF7; --ink: #16202A; --muted: #59646D; --line: #D2D7D0; --line-strong: #A8B0A9;
+  --accent: #2253A3; --on-accent: #FFFFFF; --cap: #B42318; --ok: #1E7A45; --hatch: rgba(22, 32, 42, .16);
+  --fill-s: 46%; --fill-l: 80%; --cell-empty: #F9FAF7;
+  --font-display: "Archivo", "Arial Narrow", "Helvetica Neue", Arial, sans-serif;
+  --font-body: "Archivo", "Helvetica Neue", Arial, sans-serif;
+  --font-mono: "Martian Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #10151A; --surface: #171E25; --ink: #E7ECE9; --muted: #9BA6AE; --line: #29323B; --line-strong: #46525C;
+    --accent: #86ABEE; --on-accent: #0C1420; --cap: #FF7A6B; --ok: #62C892; --hatch: rgba(231, 236, 233, .16);
+    --fill-s: 30%; --fill-l: 31%; --cell-empty: #171E25; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #10151A; --surface: #171E25; --ink: #E7ECE9; --muted: #9BA6AE; --line: #29323B; --line-strong: #46525C;
+  --accent: #86ABEE; --on-accent: #0C1420; --cap: #FF7A6B; --ok: #62C892; --hatch: rgba(231, 236, 233, .16);
+  --fill-s: 30%; --fill-l: 31%; --cell-empty: #171E25; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 16px; line-height: 1.55;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 28px 40px;
+}
+.wrap { max-width: 1120px; margin: 0 auto; display: grid; gap: 28px; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+h1, h2, h3 { margin: 0; font-family: var(--font-display); text-wrap: balance; }
+p { margin: 0; }
+a { color: var(--accent); }
+
+.top { display: grid; gap: 10px; }
+.eyebrow { font-family: var(--font-mono); font-size: 11.5px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); display: flex; flex-wrap: wrap; gap: 4px 14px; }
+.eyebrow a { color: inherit; }
+h1 { font-size: clamp(34px, 5.4vw, 60px); font-weight: 800; font-stretch: 118%; letter-spacing: -.01em; line-height: 1.02; text-transform: uppercase; }
+.lede { max-width: 64ch; color: var(--muted); font-size: 17px; }
+
+.stage { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); gap: 28px; align-items: start; }
+@media (max-width: 880px) { .stage { grid-template-columns: minmax(0, 1fr); } }
+
+/* board */
+.board-wrap { display: grid; gap: 10px; }
+.board {
+  --n: 11; container-type: inline-size; width: 100%; max-width: 600px; aspect-ratio: 1;
+  display: grid; grid-template-columns: repeat(var(--n), minmax(0, 1fr)); gap: 1px;
+  background: var(--line); border: 2px solid var(--ink); border-radius: 4px; overflow: hidden;
+}
+.cell { position: relative; display: grid; place-items: center; background: var(--cell-empty); font-family: var(--font-mono); transition: background-color .12s; }
+.cell .v { font-size: calc(30cqi / var(--n)); font-weight: 600; line-height: 1; }
+.cell .d { font-size: calc(19cqi / var(--n)); color: var(--muted); line-height: 1; }
+.cell .cp { position: absolute; top: 12%; right: 12%; width: calc(9cqi / var(--n)); height: calc(9cqi / var(--n)); border-radius: 50%; background: var(--cap); box-shadow: 0 0 0 calc(2.6cqi / var(--n)) var(--cell-empty); }
+.cell.big-hint { background-image: repeating-linear-gradient(135deg, var(--hatch) 0 2px, transparent 2px 7px); }
+.cell.cap-hint::before { content: ""; position: absolute; top: 12%; right: 12%; width: calc(9cqi / var(--n)); height: calc(9cqi / var(--n)); border-radius: 50%; border: 2px solid var(--cap); }
+.cell.one-hint { box-shadow: inset 0 0 0 2px var(--ink); }
+.cell.scan::after { content: ""; position: absolute; inset: 1px; border: 2px solid var(--accent); border-radius: 2px; }
+.cell.bad .v { color: var(--cap); }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 13px; color: var(--muted); }
+.legend span { display: inline-flex; align-items: center; gap: 7px; }
+.sw { width: 14px; height: 14px; border-radius: 3px; border: 1px solid var(--line-strong); background: var(--cell-empty); }
+.sw.hatch { background-image: repeating-linear-gradient(135deg, var(--hatch) 0 2px, transparent 2px 5px); }
+.sw.dot { border: 0; width: 9px; height: 9px; border-radius: 50%; background: var(--cap); }
+.sw.scan { border: 2px solid var(--accent); }
+
+/* panel */
+.panel { display: grid; gap: 18px; min-width: 0; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 18px; display: grid; gap: 14px; min-width: 0; }
+.seg { display: grid; grid-template-columns: 1fr 1fr; border: 1px solid var(--line-strong); border-radius: 8px; overflow: hidden; }
+.seg button { font: 600 14px/1.2 var(--font-body); padding: 10px 8px; border: 0; background: transparent; color: var(--ink); cursor: pointer; }
+.seg button + button { border-left: 1px solid var(--line-strong); }
+.seg button[aria-pressed="true"] { background: var(--ink); color: var(--bg); }
+.seg button:disabled { cursor: not-allowed; opacity: .55; }
+.actions { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.btn { font: 700 15px/1 var(--font-body); font-stretch: 110%; letter-spacing: .02em; padding: 12px 18px; border-radius: 8px; border: 1px solid var(--accent); background: var(--accent); color: var(--on-accent); cursor: pointer; }
+.btn.ghost { background: transparent; color: var(--ink); border-color: var(--line-strong); }
+.btn:disabled { opacity: .45; cursor: not-allowed; }
+.status { display: inline-flex; align-items: center; gap: 8px; font-family: var(--font-mono); font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+.status i { width: 8px; height: 8px; border-radius: 50%; background: var(--line-strong); }
+.status[data-s="run"] i { background: var(--accent); animation: pulse 1s ease-in-out infinite; }
+.status[data-s="ok"] i { background: var(--ok); }
+.status[data-s="ok"] { color: var(--ok); }
+.status[data-s="err"] i { background: var(--cap); }
+@keyframes pulse { 50% { opacity: .25; } }
+@media (prefers-reduced-motion: reduce) { .status[data-s="run"] i { animation: none; } .cell { transition: none; } }
+.note { font-size: 13.5px; color: var(--muted); }
+
+.stats { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+.stat { background: var(--surface); padding: 10px 12px; display: grid; gap: 2px; min-width: 0; }
+.stat .k { font-size: 12px; color: var(--muted); }
+.stat .n { font-family: var(--font-mono); font-size: 17px; font-weight: 500; font-variant-numeric: tabular-nums; }
+.bar { height: 4px; background: var(--line); border-radius: 2px; overflow: hidden; }
+.bar b { display: block; height: 100%; width: 0; background: var(--accent); transition: width .1s; }
+
+.facts { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.facts label { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 4px 10px; align-items: start; cursor: pointer; }
+.facts input { margin: 4px 0 0; width: 16px; height: 16px; accent-color: var(--accent); }
+.facts .t { font-weight: 600; font-size: 14.5px; }
+.facts .w { grid-column: 2; font-size: 13px; color: var(--muted); }
+.mono { font-family: var(--font-mono); font-size: .86em; }
+h2 { font-size: 15px; font-weight: 700; font-stretch: 112%; letter-spacing: .06em; text-transform: uppercase; }
+h2 small { font-family: var(--font-body); font-weight: 400; letter-spacing: 0; text-transform: none; color: var(--muted); font-size: 13px; margin-left: 6px; }
+
+/* result */
+.answer { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 6px 16px; }
+.answer .big { font-family: var(--font-display); font-weight: 800; font-stretch: 112%; font-size: clamp(34px, 5vw, 46px); line-height: 1; font-variant-numeric: tabular-nums; }
+.checks { display: grid; gap: 6px; font-size: 14px; }
+.checks .ok { color: var(--ok); font-weight: 600; }
+.checks .no { color: var(--cap); font-weight: 600; }
+.rows-wrap { overflow-x: auto; }
+.rows { width: 100%; border-collapse: collapse; font-family: var(--font-mono); font-size: 12.5px; font-variant-numeric: tabular-nums; }
+.rows th, .rows td { padding: 5px 8px; text-align: right; border-bottom: 1px solid var(--line); white-space: nowrap; }
+.rows th { font-family: var(--font-body); font-weight: 600; font-size: 12px; color: var(--muted); }
+.rows th:first-child, .rows td:first-child { text-align: left; }
+.rows tfoot td { font-weight: 600; border-bottom: 0; }
+.toggle { display: inline-flex; align-items: center; gap: 8px; font-size: 14px; cursor: pointer; }
+.toggle input { accent-color: var(--accent); width: 16px; height: 16px; margin: 0; }
+
+/* text */
+.explain { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 28px; border-top: 2px solid var(--ink); padding-top: 22px; }
+@media (max-width: 760px) { .explain { grid-template-columns: minmax(0, 1fr); } }
+.explain section { display: grid; gap: 10px; align-content: start; min-width: 0; }
+.explain ul, .explain ol { margin: 0; padding-left: 20px; display: grid; gap: 8px; max-width: 62ch; }
+.credit { font-size: 13px; color: var(--muted); }
+.credit a { font-weight: 600; }
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <p class="eyebrow"><span>Jane Street puzzle · October 2026</span><a href="https://www.janestreet.com/puzzles/it-s-a-metric-too-index/" target="_blank" rel="noopener">Puzzle page ↗</a></p>
+    <h1>It's a Metric, Too</h1>
+    <p class="lede">A search engine that splits the grid into symmetric states until every clue's travel cost to the nearest capitol comes out exact. It runs in your browser and checks its own answer.</p>
+  </header>
+
+  <div class="stage">
+    <div class="board-wrap">
+      <div class="board" id="board" role="img" aria-label="Puzzle grid"></div>
+      <div class="legend" aria-hidden="true">
+        <span><i class="sw"></i>Unassigned</span>
+        <span><i class="sw dot"></i>Capitol</span>
+        <span><i class="sw hatch"></i>Starting fact: big state</span>
+        <span><i class="sw scan"></i>Square being examined</span>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="card">
+        <div class="seg" role="group" aria-label="Puzzle">
+          <button type="button" id="pick-main" aria-pressed="true">October puzzle · 11×11</button>
+          <button type="button" id="pick-example" aria-pressed="false">Example · 5×5</button>
+        </div>
+        <div class="actions">
+          <button class="btn" type="button" id="solve">Solve</button>
+          <button class="btn ghost" type="button" id="stop" disabled>Stop</button>
+          <button class="btn ghost" type="button" id="reset">Reset</button>
+          <span class="status" id="status" data-s="idle"><i></i><span id="status-text">Ready</span></span>
+        </div>
+        <div class="stats">
+          <div class="stat"><span class="k">Elapsed</span><span class="n" id="st-time">0.0 s</span></div>
+          <div class="stat"><span class="k">Decisions</span><span class="n" id="st-nodes">0</span></div>
+          <div class="stat"><span class="k">Shapes tested</span><span class="n" id="st-shapes">0</span></div>
+          <div class="stat"><span class="k">Squares assigned</span><span class="n" id="st-filled">0 / 121</span></div>
+        </div>
+        <div class="bar" aria-hidden="true"><b id="bar"></b></div>
+        <p class="note" id="note">The search starts from the clues and the starting facts. Nothing else about the answer is given to it.</p>
+      </div>
+
+      <div class="card" id="facts-card">
+        <h2>Starting facts <small>reasoned from the clues</small></h2>
+        <ul class="facts" id="facts"></ul>
+        <p class="note">Untick a fact to make the search work it out itself. It will take much longer.</p>
+      </div>
+
+      <div class="card" id="result" hidden>
+        <div class="answer">
+          <h2>Answer</h2>
+          <span class="big" id="answer">0</span>
+        </div>
+        <div class="checks" id="checks"></div>
+        <label class="toggle"><input type="checkbox" id="show-d"> Show travel cost on every square</label>
+        <div class="rows-wrap">
+          <table class="rows">
+            <thead><tr><th>Row</th><th>Sum of state sizes</th><th>Squared</th></tr></thead>
+            <tbody id="rows"></tbody>
+            <tfoot><tr><td>Total</td><td></td><td id="rows-total">0</td></tr></tfoot>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="explain">
+    <section>
+      <h2>The rules</h2>
+      <ul>
+        <li>Split the grid into states. Each state is a connected group of squares with at least one rotation or reflection symmetry.</li>
+        <li>If every symmetry of a state fixes the same single square, that square is the state's capitol.</li>
+        <li>Stepping between two neighbouring squares costs the size of the smaller of their two states.</li>
+        <li>A clue is the cheapest total cost from that square to any capitol. A 0 marks a capitol.</li>
+        <li>The answer is the sum, over all rows, of the square of the row's total state size.</li>
+      </ul>
+    </section>
+    <section>
+      <h2>How the solver works</h2>
+      <ol>
+        <li>Each square starts with a size range for its state. Clues narrow those ranges. For example, neighbours whose costs differ by 16 must both sit in states of 16 or more squares.</li>
+        <li>For every open square it lists each symmetric shape of up to 12 squares that could contain it, plus the option "part of a bigger state".</li>
+        <li>It commits at the square with the fewest options left. It then recomputes cost bounds for the whole board and backs up as soon as any clue can't be met.</li>
+        <li>Big states are resolved last, from whatever region is left over. The finished grid is checked against every clue from scratch.</li>
+      </ol>
+    </section>
+  </div>
+
+  <p class="credit">Built by Charles Hobson</p>
+</div>
+
+<script id="engine">
+'use strict';
+(function () {
+// Shared puzzle logic for "It's a Metric, Too" (Jane Street, October 2026).
+// Works in Node (module.exports) and in a browser worker (self.MetricCore).
+
+const PUZZLES = {
+  main: {
+    name: 'October 2026 puzzle',
+    N: 11,
+    // [row, col, value], 0-indexed
+    clues: [
+      [0, 1, 8], [0, 2, 4], [0, 5, 11], [0, 9, 5],
+      [1, 7, 11],
+      [2, 2, 7], [2, 5, 1], [2, 10, 14],
+      [3, 0, 28], [3, 3, 51], [3, 6, 1], [3, 8, 6],
+      [4, 1, 22], [4, 8, 4], [4, 10, 1],
+      [5, 3, 15], [5, 5, 10], [5, 7, 0],
+      [6, 0, 11], [6, 2, 11], [6, 9, 9],
+      [7, 2, 17], [7, 4, 14], [7, 7, 10], [7, 10, 13],
+      [8, 0, 30], [8, 5, 6], [8, 8, 45],
+      [9, 3, 10],
+      [10, 1, 26], [10, 5, 0], [10, 8, 77], [10, 9, 61],
+    ],
+  },
+  example: {
+    name: 'Example from the puzzle page',
+    N: 5,
+    clues: [
+      [0, 0, 12], [0, 4, 17], [1, 0, 8], [1, 2, 6], [1, 3, 3],
+      [3, 1, 7], [3, 2, 6], [3, 4, 10], [4, 0, 25], [4, 4, 0],
+    ],
+  },
+};
+
+// The seven nontrivial symmetries of the square lattice, applied to (r, c).
+const TRANSFORMS = [
+  (r, c) => [-c, r],   // rotate 90
+  (r, c) => [-r, -c],  // rotate 180
+  (r, c) => [c, -r],   // rotate 270
+  (r, c) => [-r, c],   // reflect across a horizontal line
+  (r, c) => [r, -c],   // reflect across a vertical line
+  (r, c) => [c, r],    // reflect across the main diagonal
+  (r, c) => [-c, -r],  // reflect across the other diagonal
+];
+
+// Symmetry and capitol of a set of cells (array of [r, c]).
+// Returns { connected, symmetric, capitol: [r, c] | null }.
+function analyzeShape(cells) {
+  const n = cells.length;
+  const key = (r, c) => r * 1000 + c;
+  const set = new Set(cells.map(([r, c]) => key(r, c)));
+  // connectivity
+  const seen = new Set([key(cells[0][0], cells[0][1])]);
+  const q = [cells[0]];
+  for (let i = 0; i < q.length; i++) {
+    const [r, c] = q[i];
+    for (const [dr, dc] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+      const k = key(r + dr, c + dc);
+      if (set.has(k) && !seen.has(k)) { seen.add(k); q.push([r + dr, c + dc]); }
+    }
+  }
+  const connected = seen.size === n;
+  if (n === 1) return { connected: true, symmetric: true, capitol: cells[0] };
+  let minR = Infinity, minC = Infinity;
+  for (const [r, c] of cells) { if (r < minR) minR = r; if (c < minC) minC = c; }
+  let symmetric = false, capitol = null, capitolOk = true;
+  for (const T of TRANSFORMS) {
+    const img = cells.map(([r, c]) => T(r, c));
+    let mr = Infinity, mc = Infinity;
+    for (const [r, c] of img) { if (r < mr) mr = r; if (c < mc) mc = c; }
+    let ok = true;
+    const fixed = [];
+    for (let i = 0; i < n; i++) {
+      const r2 = img[i][0] - mr + minR, c2 = img[i][1] - mc + minC;
+      if (!set.has(key(r2, c2))) { ok = false; break; }
+      if (r2 === cells[i][0] && c2 === cells[i][1]) fixed.push(cells[i]);
+    }
+    if (!ok) continue;
+    symmetric = true;
+    if (fixed.length !== 1) capitolOk = false;
+    else if (capitol && (capitol[0] !== fixed[0][0] || capitol[1] !== fixed[0][1])) capitolOk = false;
+    else capitol = fixed[0];
+  }
+  return { connected, symmetric, capitol: symmetric && capitolOk ? capitol : null };
+}
+
+// Lowest travel cost from every cell to any capitol.
+// owner: Int array of state ids per cell; sizes: Map/array id -> size; capitols: cell indices.
+function travelCosts(N, owner, sizeOf, capitols) {
+  const NN = N * N;
+  const dist = new Array(NN).fill(Infinity);
+  const done = new Uint8Array(NN);
+  for (const i of capitols) dist[i] = 0;
+  for (let iter = 0; iter < NN; iter++) {
+    let u = -1, best = Infinity;
+    for (let i = 0; i < NN; i++) if (!done[i] && dist[i] < best) { best = dist[i]; u = i; }
+    if (u < 0) break;
+    done[u] = 1;
+    const r = (u / N) | 0, c = u % N;
+    const nbs = [];
+    if (r > 0) nbs.push(u - N); if (r < N - 1) nbs.push(u + N);
+    if (c > 0) nbs.push(u - 1); if (c < N - 1) nbs.push(u + 1);
+    for (const v of nbs) {
+      const w = Math.min(sizeOf(owner[u]), sizeOf(owner[v]));
+      if (dist[u] + w < dist[v]) dist[v] = dist[u] + w;
+    }
+  }
+  return dist;
+}
+
+// Full check of a finished partition. owner: array of state ids (one per cell).
+function verify(puzzle, owner) {
+  const N = puzzle.N, NN = N * N;
+  const members = new Map();
+  for (let i = 0; i < NN; i++) {
+    if (owner[i] == null) return { ok: false, reason: 'Cell ' + i + ' is not in any state' };
+    if (!members.has(owner[i])) members.set(owner[i], []);
+    members.get(owner[i]).push([(i / N) | 0, i % N]);
+  }
+  const capitols = [];
+  const states = [];
+  for (const [id, cells] of members) {
+    const a = analyzeShape(cells);
+    if (!a.connected) return { ok: false, reason: 'State ' + id + ' is not connected' };
+    if (!a.symmetric) return { ok: false, reason: 'State ' + id + ' has no symmetry' };
+    if (a.capitol) capitols.push(a.capitol[0] * N + a.capitol[1]);
+    states.push({ id, size: cells.length, cells, capitol: a.capitol });
+  }
+  const size = id => members.get(id).length;
+  const dist = travelCosts(N, owner, size, capitols);
+  const mismatches = [];
+  for (const [r, c, v] of puzzle.clues) if (dist[r * N + c] !== v) mismatches.push({ r, c, want: v, got: dist[r * N + c] });
+  const rowSums = [];
+  for (let r = 0; r < N; r++) { let s = 0; for (let c = 0; c < N; c++) s += size(owner[r * N + c]); rowSums.push(s); }
+  const answer = rowSums.reduce((a, x) => a + x * x, 0);
+  return { ok: mismatches.length === 0, mismatches, dist, rowSums, answer, states, capitols };
+}
+
+const api = { PUZZLES, TRANSFORMS, analyzeShape, travelCosts, verify };
+self.MetricCore = api;
+
+})();
+// Search engine for "It's a Metric, Too" (Jane Street puzzle, October 2026).
+//
+// The board is split into states one at a time, always at the square with the
+// fewest legal options left. A square's options are every symmetric shape of at
+// most K squares that contains it and passes the travel-cost bounds, plus
+// "belongs to a big state". Big squares are resolved last, as leftover regions.
+// After each choice, size ranges and travel-cost bounds are tightened until
+// nothing changes, and the search backtracks as soon as a clue can't be met.
+(function (root) {
+  const Core = root.MetricCore;
+
+  // Every lattice symmetry that can map part of the grid to itself, with a
+  // lookup from (type, centre/axis) to its index.
+  function makeSymmetries(N) {
+    const S = [], R = 2 * N - 2, W = R + 1;
+    const idx = { r180: new Int32Array(W * W).fill(-1), r90: new Int32Array(W * W).fill(-1), h: new Int32Array(W).fill(-1), v: new Int32Array(W).fill(-1), d: new Int32Array(2 * N - 1).fill(-1), a: new Int32Array(W).fill(-1) };
+    for (let P = 0; P <= R; P++) for (let Q = 0; Q <= R; Q++) {
+      idx.r180[P * W + Q] = S.length; S.push((r, c) => [P - r, Q - c]);
+      if ((P - Q) % 2 === 0) { idx.r90[P * W + Q] = S.length; S.push((r, c) => [(P - Q) / 2 + c, (P + Q) / 2 - r]); }
+    }
+    for (let P = 0; P <= R; P++) { idx.h[P] = S.length; S.push((r, c) => [P - r, c]); }
+    for (let Q = 0; Q <= R; Q++) { idx.v[Q] = S.length; S.push((r, c) => [r, Q - c]); }
+    for (let k = -(N - 1); k <= N - 1; k++) { idx.d[k + N - 1] = S.length; S.push((r, c) => [c + k, r - k]); }
+    for (let k = 0; k <= R; k++) { idx.a[k] = S.length; S.push((r, c) => [k - c, k - r]); }
+    S.idx = idx; S.W = W;
+    return S;
+  }
+
+  function createSolver(puzzle, opts) {
+    opts = opts || {};
+    const N = puzzle.N, NN = N * N;
+    const clue = new Int32Array(NN).fill(-1);
+    for (const [r, c, v] of puzzle.clues) clue[r * N + c] = v;
+    const clueCells = [];
+    for (let i = 0; i < NN; i++) if (clue[i] >= 0) clueCells.push(i);
+    const NB = new Int16Array(NN * 4).fill(-1), NBn = new Uint8Array(NN);
+    for (let i = 0; i < NN; i++) {
+      const r = (i / N) | 0, c = i % N;
+      const add = j => { NB[i * 4 + NBn[i]++] = j; };
+      if (r > 0) add(i - N); if (r < N - 1) add(i + N); if (c > 0) add(i - 1); if (c < N - 1) add(i + 1);
+    }
+    const symFns = makeSymmetries(N), SI = symFns.idx, SW = symFns.W;
+    const syms = symFns.map(f => {
+      const map = new Int16Array(NN);
+      for (let i = 0; i < NN; i++) {
+        const [r2, c2] = f((i / N) | 0, i % N);
+        map[i] = (r2 >= 0 && r2 < N && c2 >= 0 && c2 < N) ? r2 * N + c2 : -1;
+      }
+      return map;
+    });
+    const G = syms.length;
+
+    // ---------- search state (with an undo trail) ----------
+    const EMPTY = -1, PART = 30000, TEMP = 29999;
+    const owner = new Int16Array(NN).fill(EMPTY);
+    const sLo = new Int32Array(NN).fill(1), sHi = new Int32Array(NN).fill(NN);
+    const isCap = new Uint8Array(NN);
+    for (let i = 0; i < NN; i++) {
+      if (clue[i] === 0) isCap[i] = 1;
+      if (clue[i] > 0) sLo[i] = 2;                // a single square is always a capitol
+    }
+    const trail = [];                              // [kind, index, oldA, oldB]
+    function setLo(i, v) { if (v > sLo[i]) { trail.push(0, i, sLo[i], 0); sLo[i] = v; } }
+    function setHi(i, v) { if (v < sHi[i]) { trail.push(1, i, sHi[i], 0); sHi[i] = v; } }
+    function setCap(i) { if (!isCap[i]) { trail.push(2, i, 0, 0); isCap[i] = 1; } }
+    function setOwner(i, id) { trail.push(3, i, owner[i], 0); owner[i] = id; }
+    function undoTo(mark) {
+      while (trail.length > mark) {
+        const L = trail.length - 4;
+        const k = trail[L], i = trail[L + 1], a = trail[L + 2];
+        trail.length = L;
+        if (k === 0) sLo[i] = a; else if (k === 1) sHi[i] = a; else if (k === 2) isCap[i] = 0; else owner[i] = a;
+      }
+    }
+    let filled = 0;
+    const stats = { nodes: 0, unions: 0, checks: 0, props: 0, placed: 0, splits: 0, deepest: 0, forced: 0 };
+
+    // ---------- shortest paths ----------
+    const INF = 1 << 28;
+    const heap = new Int32Array(NN * 8);
+    let hn = 0, hk = null;
+    function hpush(i) { let k = hn++; heap[k] = i; while (k > 0) { const p = (k - 1) >> 1; if (hk[heap[p]] <= hk[heap[k]]) break; const t = heap[p]; heap[p] = heap[k]; heap[k] = t; k = p; } }
+    function hpop() { const top = heap[0]; hn--; if (hn > 0) { heap[0] = heap[hn]; let k = 0; for (;;) { const l = 2 * k + 1, r = l + 1; let m = k; if (l < hn && hk[heap[l]] < hk[heap[m]]) m = l; if (r < hn && hk[heap[r]] < hk[heap[m]]) m = r; if (m === k) break; const t = heap[m]; heap[m] = heap[k]; heap[k] = t; k = m; } } return top; }
+    const done = new Uint8Array(NN);
+    function relax(dist, w) {
+      hk = dist; hn = 0; done.fill(0);
+      for (let i = 0; i < NN; i++) if (dist[i] < INF) hpush(i);
+      while (hn > 0) {
+        const u = hpop();
+        if (done[u]) continue;
+        done[u] = 1;
+        const du = dist[u], wu = w[u];
+        for (let p = 0; p < NBn[u]; p++) {
+          const v = NB[u * 4 + p];
+          if (done[v]) continue;
+          const wv = w[v];
+          const nd = du + (wu < wv ? wu : wv);
+          if (nd < dist[v]) { dist[v] = nd; hpush(v); }
+        }
+      }
+    }
+
+    // ---------- bounds ----------
+    const comp = new Int32Array(NN), seen = new Uint8Array(NN), queue = new Int32Array(NN);
+    const lo = new Int32Array(NN), hi = new Int32Array(NN);
+    const dHi = new Int32Array(NN), dE = new Int32Array(NN), dLB = new Int32Array(NN), dLo = new Int32Array(NN);
+    let partK = 0, partFixed = null;   // state being grown, if any (cells marked PART)
+    function computeBounds() {
+      stats.checks++;
+      seen.fill(0);
+      for (let i = 0; i < NN; i++) {
+        if ((owner[i] !== EMPTY && owner[i] !== PART) || seen[i]) continue;
+        let h = 0, t = 0; queue[t++] = i; seen[i] = 1;
+        while (h < t) { const x = queue[h++]; for (let p = 0; p < NBn[x]; p++) { const z = NB[x * 4 + p]; if (!seen[z] && (owner[z] === EMPTY || owner[z] === PART)) { seen[z] = 1; queue[t++] = z; } } }
+        for (let k = 0; k < t; k++) comp[queue[k]] = t;
+      }
+      for (let i = 0; i < NN; i++) {
+        const o = owner[i];
+        if (o === EMPTY) { lo[i] = sLo[i]; hi[i] = sHi[i] < comp[i] ? sHi[i] : comp[i]; }
+        else if (o === PART) { lo[i] = partK > sLo[i] ? partK : sLo[i]; hi[i] = sHi[i] < comp[i] ? sHi[i] : comp[i]; }
+        else { lo[i] = hi[i] = sLo[i]; }
+        if (lo[i] > hi[i]) return false;
+      }
+      // upper bound from capitols and from every clue (its value is exact)
+      dHi.fill(INF);
+      for (let i = 0; i < NN; i++) if (isCap[i]) dHi[i] = 0;
+      for (const a of clueCells) if (clue[a] < dHi[a]) dHi[a] = clue[a];
+      relax(dHi, hi);
+      for (const a of clueCells) if (dHi[a] < clue[a]) return false;
+      // lower bound implied by clues: d(x) >= clue(b) - dist(b, x)
+      dE.fill(INF);
+      for (const a of clueCells) dE[a] = -clue[a];
+      relax(dE, hi);
+      // lower bound from every square that could still be a capitol
+      dLB.fill(INF);
+      for (let x = 0; x < NN; x++) {
+        if (!isCap[x]) {
+          if (clue[x] > 0 || dE[x] < 0) continue;
+          if (owner[x] !== EMPTY && !(owner[x] === PART && partFixed && partFixed[x])) continue;
+        }
+        let cs = lo[x];
+        for (let p = 0; p < NBn[x]; p++) { const j = NB[x * 4 + p]; if (clue[j] > cs) cs = clue[j]; }
+        if (cs % 2 === 0) cs++;
+        if (owner[x] !== EMPTY && owner[x] !== PART) cs = lo[x];
+        dLB[x] = 0;
+        for (let p = 0; p < NBn[x]; p++) { const y = NB[x * 4 + p]; const w = cs < lo[y] ? cs : lo[y]; if (w < dLB[y]) dLB[y] = w; }
+      }
+      relax(dLB, lo);
+      for (let i = 0; i < NN; i++) { const a = -dE[i]; dLo[i] = dLB[i] > a ? dLB[i] : a; }
+      for (const a of clueCells) if (dLo[a] > clue[a]) return false;
+      return true;
+    }
+    // tighten size ranges of empty squares until nothing changes
+    function propagate() {
+      stats.props++;
+      for (let round = 0; round < 8; round++) {
+        if (!computeBounds()) return false;
+        let changed = false;
+        for (let i = 0; i < NN; i++) {
+          if (owner[i] !== EMPTY) continue;
+          // the state lies inside this square's empty region
+          if (comp[i] < sHi[i]) { setHi(i, comp[i]); changed = true; }
+          // neighbouring costs that differ by k need both states of size >= k
+          for (let p = 0; p < NBn[i]; p++) {
+            const j = NB[i * 4 + p];
+            const k1 = dLo[i] - dHi[j], k2 = dLo[j] - dHi[i];
+            const k = k1 > k2 ? k1 : k2;
+            if (k > sLo[i]) { setLo(i, k); changed = true; }
+          }
+          // a square between two neighbours carries their whole cost difference
+          // in two steps, so both steps (and this square's state) must be big enough
+          for (let p = 0; p < NBn[i]; p++) {
+            const a = NB[i * 4 + p];
+            for (let q = 0; q < NBn[i]; q++) {
+              if (q === p) continue;
+              const b = NB[i * 4 + q];
+              const k = dLo[b] - dHi[a];
+              if (k <= 0) continue;
+              const ha = hi[a], hb = hi[b], m = ha < hb ? ha : hb, M = ha < hb ? hb : ha;
+              let need;
+              if (k <= 2 * m) need = (k + 1) >> 1;
+              else if (k - m <= M) need = k - m;
+              else return false;
+              if (need > sLo[i]) { setLo(i, need); changed = true; }
+            }
+          }
+          // a capitol's state has odd size
+          if (isCap[i]) { if (sLo[i] % 2 === 0) { setLo(i, sLo[i] + 1); changed = true; } if (sHi[i] % 2 === 0) { setHi(i, sHi[i] - 1); changed = true; } }
+          // not a capitol: the cheapest way in costs at most dHi - dLo(parent)
+          if (!isCap[i] && (clue[i] > 0 || dLo[i] > 0)) {
+            let anySmallNeighbour = false, maxK = 0;
+            for (let p = 0; p < NBn[i]; p++) {
+              const u = NB[i * 4 + p];
+              const k = dHi[i] - dLo[u];
+              if (k > maxK) maxK = k;
+              if (lo[u] <= k) anySmallNeighbour = true;
+            }
+            if (!anySmallNeighbour && maxK < sHi[i]) { setHi(i, maxK); changed = true; }
+          }
+          if (sLo[i] > sHi[i]) return false;
+        }
+        // a state of size s needs s connected squares whose ranges allow s
+        for (let i = 0; i < NN; i++) {
+          if (owner[i] !== EMPTY) continue;
+          let s = sHi[i];
+          while (s >= sLo[i]) {
+            seen.fill(0);
+            let h = 0, t = 0; queue[t++] = i; seen[i] = 1;
+            while (h < t && t < s) { const x = queue[h++]; for (let p = 0; p < NBn[x]; p++) { const z = NB[x * 4 + p]; if (!seen[z] && owner[z] === EMPTY && sLo[z] <= s && sHi[z] >= s) { seen[z] = 1; queue[t++] = z; } } }
+            if (t >= s) break;
+            s--;
+          }
+          if (s < sHi[i]) { setHi(i, s); changed = true; }
+          if (sLo[i] > sHi[i]) return false;
+        }
+        if (!changed) return true;
+      }
+      return computeBounds();
+    }
+
+    // ---------- candidate states containing a square ----------
+    const inU = new Uint8Array(NN), mark = new Uint8Array(NN);
+    const orbitBuf = new Int16Array(8);
+    const fixedMark = new Uint8Array(NN);
+    function orbit(map, x, out) {
+      out[0] = x; let n = 1, y = map[x];
+      while (y !== x) { if (y < 0 || n >= 4) return 0; out[n++] = y; y = map[y]; }
+      return n;
+    }
+    function connected(cells, n) {
+      seen.fill(0);
+      let h = 0, t = 0; queue[t++] = cells[0]; seen[cells[0]] = 1;
+      while (h < t) { const x = queue[h++]; for (let p = 0; p < NBn[x]; p++) { const z = NB[x * 4 + p]; if (inU[z] && !seen[z]) { seen[z] = 1; queue[t++] = z; } } }
+      return t === n;
+    }
+    let deadline = Infinity, timedOut = false;
+    function enumerate(v, budget, cap, onCand, maxSize) {
+      let count = 0, steps = 0, complete = true;
+      seen.fill(0);
+      let h = 0, t = 0; queue[t++] = v; seen[v] = 1;
+      while (h < t) { const x = queue[h++]; for (let p = 0; p < NBn[x]; p++) { const z = NB[x * 4 + p]; if (!seen[z] && owner[z] === EMPTY) { seen[z] = 1; queue[t++] = z; } } }
+      const compSize = Math.min(t, sHi[v], maxSize || NN);
+      const cells = new Int16Array(NN);
+      let n = 0;
+      for (let gi = 0; gi < G && complete; gi++) {
+        const map = syms[gi];
+        const o0n = orbit(map, v, orbitBuf);
+        if (!o0n) continue;
+        let ok = true;
+        for (let k = 0; k < o0n; k++) if (owner[orbitBuf[k]] !== EMPTY) ok = false;
+        if (!ok) continue;
+        if (clue[v] === 0 && map[v] !== v) continue;
+        mark.fill(0);
+        const o0 = Array.from(orbitBuf.subarray(0, o0n));
+        for (const y of o0) mark[y] = 1;
+        let maxLo = 0, minHi = NN;
+        const rec = (untried) => {
+          while (untried.length) {
+            if (steps > budget || count > cap || ((steps & 255) === 0 && Date.now() > deadline)) { complete = false; return; }
+            const u = untried.pop();
+            if (n + u.length > compSize) continue;
+            const saveLo = maxLo, saveHi = minHi;
+            for (const y of u) { inU[y] = 1; cells[n++] = y; if (sLo[y] > maxLo) maxLo = sLo[y]; if (sHi[y] < minHi) minHi = sHi[y]; }
+            steps++; stats.unions++;
+            if ((steps & 4095) === 0 && opts.onTick) opts.onTick(v);
+            // the final size lies in [max(n, maxLo), minHi]
+            let prune = (n > minHi) || (maxLo > minHi);
+            for (const y of u) if (clue[y] === 0 && map[y] !== y) prune = true;
+            if (!prune) for (let k = 0; k < n && !prune; k++) {
+              const y = cells[k];
+              if (clue[y] > 0 && clue[y] < n) {
+                let enclosed = true;
+                for (let p = 0; p < NBn[y]; p++) if (!inU[NB[y * 4 + p]]) { enclosed = false; break; }
+                if (enclosed) prune = true;
+              }
+            }
+            if (!prune) {
+              if (n >= maxLo && testComplete(gi, cells, n, onCand)) count++;
+              if (n < compSize && n < minHi) {
+                const newly = [], fresh = [];
+                for (const y of u) for (let p = 0; p < NBn[y]; p++) {
+                  const z = NB[y * 4 + p];
+                  if (mark[z] || owner[z] !== EMPTY) continue;
+                  const on = orbit(map, z, orbitBuf);
+                  if (!on) { mark[z] = 1; newly.push(z); continue; }
+                  let bad = false;
+                  const o = [];
+                  for (let k = 0; k < on; k++) { const w = orbitBuf[k]; o.push(w); if (owner[w] !== EMPTY || inU[w]) bad = true; }
+                  for (const w of o) if (!mark[w]) { mark[w] = 1; newly.push(w); }
+                  if (!bad) fresh.push(o);
+                }
+                rec(untried.concat(fresh));
+                for (const w of newly) mark[w] = 0;
+              }
+            }
+            for (const y of u) inU[y] = 0;
+            n -= u.length;
+            maxLo = saveLo; minHi = saveHi;
+            if (!complete) return;
+          }
+        };
+        rec([o0]);
+      }
+      return { complete, count };
+    }
+    // symmetries of a finished shape, found from its bounding box
+    const fixBuf = new Int32Array(8);
+    function shapeSyms(cells, n) {
+      let r0 = N, r1 = -1, c0 = N, c1 = -1;
+      for (let k = 0; k < n; k++) { const r = (cells[k] / N) | 0, c = cells[k] % N; if (r < r0) r0 = r; if (r > r1) r1 = r; if (c < c0) c0 = c; if (c > c1) c1 = c; }
+      const P = r0 + r1, Q = c0 + c1;
+      let m = 0;
+      const test = gi => { if (gi < 0) return; const map = syms[gi]; for (let k = 0; k < n; k++) { const y = map[cells[k]]; if (y < 0 || !inU[y]) return; } fixBuf[m++] = gi; };
+      test(SI.r180[P * SW + Q]);
+      if (r1 - r0 === c1 - c0 && (P - Q) % 2 === 0) test(SI.r90[P * SW + Q]);
+      test(SI.h[P]); test(SI.v[Q]);
+      if (r1 - c1 === r0 - c0) test(SI.d[r0 - c0 + N - 1]);
+      if (r0 + c1 === r1 + c0) test(SI.a[r0 + c1]);
+      return m;
+    }
+    function testComplete(gi, cells, n, onCand) {
+      for (let k = 0; k < n; k++) { const y = cells[k]; if (sLo[y] > n || sHi[y] < n) return false; }
+      if (!connected(cells, n)) return false;
+      const m = shapeSyms(cells, n);
+      let minG = Infinity; for (let k = 0; k < m; k++) if (fixBuf[k] < minG) minG = fixBuf[k];
+      if (minG !== gi) return false;           // counted under its first symmetry only
+      // capitol: every symmetry of the state fixes exactly one square, the same one
+      let capIdx = -1;
+      for (let q = 0; q < m; q++) {
+        const map = syms[fixBuf[q]]; let f = -1, cnt = 0;
+        for (let k = 0; k < n; k++) if (map[cells[k]] === cells[k]) { cnt++; f = cells[k]; }
+        if (cnt !== 1 || (q > 0 && f !== capIdx)) { capIdx = -1; break; }
+        capIdx = f;
+      }
+      for (let k = 0; k < n; k++) {
+        const y = cells[k];
+        if (clue[y] === 0 && y !== capIdx) return false;
+        if (clue[y] > 0 && y === capIdx) return false;
+      }
+      const list = Array.from(cells.subarray(0, n));
+      if (!candidateOk(list, capIdx)) return false;
+      onCand(list, capIdx);
+      return true;
+    }
+    // full check of a finished state placed on the current board
+    function candidateOk(list, capIdx) {
+      for (const y of list) if (owner[y] !== EMPTY) return false;
+      const saveLo = list.map(y => sLo[y]), saveHi = list.map(y => sHi[y]);
+      for (const y of list) { owner[y] = TEMP; sLo[y] = sHi[y] = list.length; }
+      const hadCap = capIdx >= 0 ? isCap[capIdx] : 0;
+      if (capIdx >= 0) isCap[capIdx] = 1;
+      const ok = computeBounds();
+      list.forEach((y, k) => { owner[y] = EMPTY; sLo[y] = saveLo[k]; sHi[y] = saveHi[k]; });
+      if (capIdx >= 0) isCap[capIdx] = hadCap;
+      return ok;
+    }
+
+    // ---------- depth-first search ----------
+    // Every square is either covered by a "small" state (at most K squares,
+    // listed explicitly) or marked big (its state has more than K squares).
+    // Big squares are only resolved at the end, as the leftover regions.
+    const K = opts.K || 12, BIGLO = K + 1;
+    let solution = null, nextId = 1, depth = 0;
+    const B = opts.budget || 2000;
+    function placeState(list, capIdx) {
+      const id = nextId++;
+      for (const y of list) { setOwner(y, id); setLo(y, list.length); setHi(y, list.length); }
+      if (capIdx >= 0) setCap(capIdx);
+      filled += list.length;
+    }
+    function snapshot() {
+      return { filled, depth, owner: Array.from(owner), cap: Array.from(isCap), stats: Object.assign({}, stats) };
+    }
+    function cheapOk(cells) { for (const y of cells) if (owner[y] !== EMPTY || sLo[y] > cells.length || sHi[y] < cells.length) return false; return true; }
+    function tryBranches(opts2, next, failed) {
+      // opts2: array of {cells, capIdx} or {big: v}
+      for (const o of opts2) {
+        const mark = trail.length, f = filled, nid = nextId;
+        if (o.big !== undefined) setLo(o.big, BIGLO); else { placeState(o.cells, o.capIdx); stats.placed++; }
+        let r = false;
+        depth++;
+        if (propagate()) r = solve(next, failed);
+        depth--;
+        undoTo(mark); filled = f; nextId = nid;
+        if (r) return true;
+      }
+      return false;
+    }
+    function leftover(next, failed) {
+      // every empty square belongs to a big state: resolve the first empty region
+      let start = -1;
+      for (let i = 0; i < NN; i++) if (owner[i] === EMPTY) { start = i; break; }
+      seen.fill(0);
+      let h = 0, t = 0; queue[t++] = start; seen[start] = 1;
+      while (h < t) { const x = queue[h++]; for (let p = 0; p < NBn[x]; p++) { const z = NB[x * 4 + p]; if (!seen[z] && owner[z] === EMPTY) { seen[z] = 1; queue[t++] = z; } } }
+      const region = Array.from(queue.subarray(0, t));
+      const options = [];
+      // the whole region as one state
+      let fits = true;
+      for (const y of region) if (sLo[y] > t || sHi[y] < t) fits = false;
+      if (fits) {
+        const shape = Core.analyzeShape(region.map(y => [(y / N) | 0, y % N]));
+        if (shape.symmetric) {
+          const capIdx = shape.capitol ? shape.capitol[0] * N + shape.capitol[1] : -1;
+          let ok = true;
+          for (const y of region) { if (clue[y] === 0 && y !== capIdx) ok = false; if (clue[y] > 0 && y === capIdx) ok = false; }
+          if (ok && candidateOk(region, capIdx)) options.push({ cells: region, capIdx });
+        }
+      }
+      // or split into several big states
+      if (t >= 2 * BIGLO) {
+        stats.splits++;
+        enumerate(start, Infinity, Infinity, (cells, capIdx) => { if (cells.length >= BIGLO) options.push({ cells, capIdx }); }, t - BIGLO);
+      }
+      return tryBranches(options, next, failed);
+    }
+    // failed: squares whose shape listing ran over budget higher up this branch,
+    // with the budget and how full the board was; they are retried only at a
+    // larger budget or once the board has filled in noticeably since.
+    function solve(cache, failed) {
+      stats.nodes++;
+      if (filled > stats.deepest) stats.deepest = filled;
+      if (Date.now() > deadline) { timedOut = true; return true; }
+      if (opts.onProgress) opts.onProgress(snapshot);
+      if (filled === NN) {
+        const res = Core.verify(puzzle, Array.from(owner));
+        if (res.ok) { solution = { owner: Array.from(owner), res }; return true; }
+        return false;
+      }
+      const next = new Map();
+      const counts = [];             // [count, v]
+      const pending = [];
+      let anySmall = false;
+      for (let v = 0; v < NN; v++) {
+        if (owner[v] !== EMPTY || sLo[v] > K) continue;
+        anySmall = true;
+        const L = cache.get(v);
+        if (L) {
+          const kept = L.filter(c => cheapOk(c.cells));
+          next.set(v, kept);
+          const cnt = kept.length + (sHi[v] > K ? 1 : 0);
+          if (cnt === 0) return false;
+          counts.push([cnt, v]);
+        } else pending.push(v);
+      }
+      if (!anySmall) return leftover(next, failed);
+      const nextFailed = new Map(failed);
+      const full = new Set();
+      function pickBest() {
+        // lazily apply the full check to the smallest lists
+        for (;;) {
+          if (!counts.length) return null;
+          counts.sort((a, b) => a[0] - b[0]);
+          const [cnt, v] = counts[0];
+          if (full.has(v)) return counts[0];
+          const kept = next.get(v).filter(c => candidateOk(c.cells, c.capIdx));
+          next.set(v, kept);
+          full.add(v);
+          counts[0][0] = kept.length + (sHi[v] > K ? 1 : 0);
+          if (counts[0][0] === 0) return [0, v];
+        }
+      }
+      let best = pickBest();
+      if (best && best[0] === 0) return false;
+      if (!best || best[0] > 1) {
+        pending.sort((a, b) => sHi[a] - sHi[b] || (sHi[a] - sLo[a]) - (sHi[b] - sLo[b]));
+        let budget = B;
+        for (let round = 0; round < 6 && pending.length; round++) {
+          for (let k = 0; k < pending.length; k++) {
+            const v = pending[k];
+            if (v < 0) continue;
+            const f = nextFailed.get(v);
+            if (f && f.budget >= budget && filled - f.filled < 8) continue;
+            const list = [];
+            const r = enumerate(v, budget, Infinity, (cells, capIdx) => list.push({ cells, capIdx }), K);
+            if (Date.now() > deadline) { timedOut = true; return true; }
+            if (!r.complete) { nextFailed.set(v, { budget, filled }); continue; }
+            nextFailed.delete(v);
+            pending[k] = -1;
+            next.set(v, list); full.add(v);
+            const cnt = list.length + (sHi[v] > K ? 1 : 0);
+            if (cnt === 0) return false;
+            counts.push([cnt, v]);
+            if (cnt === 1) break;
+          }
+          best = pickBest();
+          if (best && best[0] === 0) return false;
+          if (best && (best[0] <= 1 || round >= 1)) break;
+          budget *= 8;
+          if (round === 4) budget = Infinity;
+        }
+      }
+      if (!best) return false;
+      const v = best[1];
+      const options = next.get(v).slice().sort((a, b) => b.cells.length - a.cells.length);
+      const branches = options.slice();
+      if (sHi[v] > K) branches.push({ big: v });
+      return tryBranches(branches, next, nextFailed);
+    }
+
+    return {
+      computeBounds, propagate, enumerate, stats, owner, sLo, sHi, isCap,
+      setTrace(fn) { opts.onProgress = fn; },
+      run(timeLimitMs) {
+        deadline = Date.now() + (timeLimitMs || opts.timeLimitMs || 600000);
+        const t = Date.now();
+        for (const g of (opts.givens || [])) {
+          const shape = Core.analyzeShape(g.map(y => [(y / N) | 0, y % N]));
+          const capIdx = shape.capitol ? shape.capitol[0] * N + shape.capitol[1] : -1;
+          placeState(g, capIdx);
+        }
+        // hand-derived facts: {type: 'single' | 'big' | 'size', cell, size}
+        for (const h of (opts.hints || [])) {
+          if (h.type === 'single') placeState([h.cell], h.cell);
+          else if (h.type === 'big') setLo(h.cell, BIGLO);
+          else if (h.type === 'size') { setLo(h.cell, h.size); setHi(h.cell, h.size); }
+          else if (h.type === 'capitol') { if (clue[h.cell] < 0) { clue[h.cell] = 0; clueCells.push(h.cell); } setCap(h.cell); }
+        }
+        if (propagate()) solve(new Map(), new Map());
+        return { result: solution ? 'found' : (timedOut ? 'timeout' : 'none'), solution, stats, ms: Date.now() - t };
+      },
+    };
+  }
+
+  root.MetricSolver = { createSolver, makeSymmetries };
+})(typeof self !== 'undefined' ? self : this);
+
+
+</script>
+<script>
+(function () {
+  var Core = window.MetricCore, Solver = window.MetricSolver;
+  var ENGINE_SRC = document.getElementById('engine').textContent;
+  var TIME_LIMIT = 20 * 60 * 1000;
+  // Facts a person can reach from the clues alone. Rows and columns are 0-indexed here, shown 1-indexed.
+  var FACTS = [
+  {
+    "id": "s1",
+    "type": "single",
+    "cells": [
+      [
+        5,
+        10
+      ]
+    ],
+    "text": "R6 C11 is a one-square state",
+    "why": "The 1 at R5 C11 needs a one-square capitol beside it. R4 C11 and R5 C10 would each drag a nearby clue down to 1, which leaves R6 C11."
+  },
+  {
+    "id": "s2",
+    "type": "single",
+    "cells": [
+      [
+        2,
+        6
+      ]
+    ],
+    "text": "R3 C7 is a one-square state",
+    "why": "The 1s at R3 C6 and R4 C7 both need a one-square capitol next door. Using R3 C5 or R4 C6 instead would force the 51 into a state of 50 or more squares."
+  },
+  {
+    "id": "b1",
+    "type": "big",
+    "cells": [
+      [
+        2,
+        2
+      ],
+      [
+        2,
+        4
+      ],
+      [
+        3,
+        1
+      ],
+      [
+        3,
+        2
+      ],
+      [
+        3,
+        3
+      ],
+      [
+        3,
+        4
+      ],
+      [
+        4,
+        2
+      ],
+      [
+        4,
+        3
+      ],
+      [
+        4,
+        4
+      ],
+      [
+        5,
+        1
+      ],
+      [
+        5,
+        2
+      ],
+      [
+        5,
+        3
+      ],
+      [
+        5,
+        5
+      ]
+    ],
+    "text": "A big state runs through the 13 shaded squares around the 51",
+    "why": "The squares beside the 51 sit in states of at least 22 squares, because its cost has to climb from the 7 and the 15 in two steps. The shaded block is a hand sketch of where that state lies."
+  }
+];
+  var HUES = [208, 142, 32, 284, 352, 178, 56, 248, 100];
+
+  var mode = 'main', worker = null, running = false, started = 0, tick = null;
+  var owner = null, cap = null, scan = -1, result = null;
+  var board = document.getElementById('board');
+  var cells = [];
+  var $ = function (id) { return document.getElementById(id); };
+  var fmt = function (n) { return Number(n).toLocaleString('en-US'); };
+  var rc = function (r, c) { return 'R' + (r + 1) + ' C' + (c + 1); };
+
+  function puzzle() { return Core.PUZZLES[mode]; }
+  function activeFacts() {
+    if (mode !== 'main') return [];
+    return FACTS.filter(function (f) { var el = $('fact-' + f.id); return el && el.checked; });
+  }
+
+  function buildBoard() {
+    var P = puzzle(), N = P.N;
+    board.style.setProperty('--n', N);
+    board.innerHTML = '';
+    cells = [];
+    var clue = {};
+    P.clues.forEach(function (q) { clue[q[0] * N + q[1]] = q[2]; });
+    for (var i = 0; i < N * N; i++) {
+      var el = document.createElement('div');
+      el.className = 'cell';
+      var v = document.createElement('span');
+      v.className = clue[i] !== undefined ? 'v' : 'd';
+      v.textContent = clue[i] !== undefined ? clue[i] : '';
+      el.appendChild(v);
+      board.appendChild(el);
+      cells.push({ el: el, text: v, clue: clue[i], dot: null });
+    }
+    board.setAttribute('aria-label', N + ' by ' + N + ' puzzle grid with ' + P.clues.length + ' clues');
+    $('st-filled').textContent = '0 / ' + N * N;
+  }
+
+  function paint() {
+    var N = puzzle().N, showD = $('show-d').checked && result;
+    var big = {};
+    var capHint = {}, oneHint = {};
+    activeFacts().forEach(function (f) {
+      f.cells.forEach(function (q) {
+        var k = q[0] * N + q[1];
+        if (f.type === 'big' || f.type === 'size') big[k] = 1;
+        else if (f.type === 'capitol') capHint[k] = 1;
+        else if (f.type === 'single') oneHint[k] = 1;
+      });
+    });
+    // map colouring: states that touch never share a colour
+    var hue = {};
+    if (owner) {
+      var adj = {}, ids = [];
+      for (var k = 0; k < N * N; k++) {
+        var a = owner[k]; if (!(a >= 1)) continue;
+        if (!adj[a]) { adj[a] = {}; ids.push(a); }
+        var right = (k % N < N - 1) ? owner[k + 1] : -1, down = k + N < N * N ? owner[k + N] : -1;
+        [right, down].forEach(function (b) { if (b >= 1 && b !== a) { adj[a][b] = 1; if (!adj[b]) { adj[b] = {}; ids.push(b); } adj[b][a] = 1; } });
+      }
+      ids.sort(function (x, y) { return x - y; }).forEach(function (a) {
+        var used = {};
+        Object.keys(adj[a]).forEach(function (b) { if (hue[b] !== undefined) used[hue[b]] = 1; });
+        var h = 0; while (used[h] && h < HUES.length - 1) h++;
+        hue[a] = h;
+      });
+    }
+    for (var i = 0; i < N * N; i++) {
+      var c = cells[i], o = owner ? owner[i] : -1;
+      var el = c.el;
+      if (o >= 1) {
+        el.style.backgroundColor = 'hsl(' + HUES[hue[o]] + ' var(--fill-s) var(--fill-l))';
+        var r = (i / N) | 0, col = i % N, sh = [];
+        if (r === 0 || owner[i - N] !== o) sh.push('inset 0 2px 0 var(--ink)');
+        if (r === N - 1 || owner[i + N] !== o) sh.push('inset 0 -2px 0 var(--ink)');
+        if (col === 0 || owner[i - 1] !== o) sh.push('inset 2px 0 0 var(--ink)');
+        if (col === N - 1 || owner[i + 1] !== o) sh.push('inset -2px 0 0 var(--ink)');
+        el.style.boxShadow = sh.join(', ');
+      } else { el.style.backgroundColor = ''; el.style.boxShadow = ''; }
+      el.classList.toggle('big-hint', !!big[i] && !(o >= 1));
+      el.classList.toggle('cap-hint', !!capHint[i] && !(o >= 1));
+      el.classList.toggle('one-hint', !!oneHint[i] && !(o >= 1));
+      el.classList.toggle('scan', i === scan && running);
+      var isCap = cap && cap[i] && o >= 1;
+      if (isCap && !c.dot) { c.dot = document.createElement('i'); c.dot.className = 'cp'; el.appendChild(c.dot); }
+      if (!isCap && c.dot) { c.dot.remove(); c.dot = null; }
+      if (c.clue === undefined) c.text.textContent = showD ? result.dist[i] : '';
+      el.classList.toggle('bad', !!(result && c.clue !== undefined && result.dist[i] !== c.clue));
+    }
+  }
+
+  function setStatus(s, text) { $('status').setAttribute('data-s', s); $('status-text').textContent = text; }
+  function setStats(st, filled, ms) {
+    var NN = puzzle().N * puzzle().N;
+    $('st-time').textContent = (ms / 1000).toFixed(1) + ' s';
+    if (st) { $('st-nodes').textContent = fmt(st.nodes); $('st-shapes').textContent = fmt(st.unions); }
+    if (filled != null) { $('st-filled').textContent = filled + ' / ' + NN; $('bar').style.width = (100 * filled / NN) + '%'; }
+  }
+  function lockUi(on) {
+    running = on;
+    $('solve').disabled = on; $('stop').disabled = !on; $('reset').disabled = on;
+    $('pick-main').disabled = on; $('pick-example').disabled = on;
+    document.querySelectorAll('#facts input').forEach(function (x) { x.disabled = on; });
+  }
+
+  function reset() {
+    owner = null; cap = null; scan = -1; result = null;
+    $('result').hidden = true; $('show-d').checked = false;
+    setStatus('idle', 'Ready'); setStats({ nodes: 0, unions: 0 }, 0, 0);
+    $('note').textContent = mode === 'main'
+      ? 'The search starts from the clues and the starting facts. Nothing else about the answer is given to it.'
+      : 'The example from the puzzle page is solved from the clues alone, with no starting facts.';
+    paint();
+  }
+
+  function finish(msg) {
+    lockUi(false);
+    clearInterval(tick);
+    if (worker) { worker.terminate(); worker = null; }
+    if (msg.owner) {
+      owner = msg.owner;
+      result = Core.verify(puzzle(), owner);
+      cap = new Array(owner.length).fill(0);
+      result.capitols.forEach(function (k) { cap[k] = 1; });
+      showResult();
+      setStatus(result.ok ? 'ok' : 'err', result.ok ? 'Solved' : 'Check failed');
+    } else if (msg.result === 'timeout') setStatus('err', 'Stopped at time limit');
+    else setStatus('err', 'No solution with these facts');
+    scan = -1;
+    setStats(msg.stats, msg.owner ? owner.length : null, msg.ms);
+    paint();
+  }
+
+  function showResult() {
+    var P = puzzle(), N = P.N;
+    $('result').hidden = false;
+    $('answer').textContent = fmt(result.answer);
+    var bad = result.mismatches.length;
+    var states = result.states.length, caps = result.capitols.length;
+    $('checks').innerHTML =
+      '<div class="' + (bad ? 'no' : 'ok') + '">' + (bad ? bad + ' of ' + P.clues.length + ' clues do not match' : 'All ' + P.clues.length + ' clues match their travel costs') + '</div>' +
+      '<div>' + states + ' states, all connected and symmetric · ' + caps + ' capitols</div>';
+    var body = '', tot = 0;
+    result.rowSums.forEach(function (s, r) { tot += s * s; body += '<tr><td>Row ' + (r + 1) + '</td><td>' + fmt(s) + '</td><td>' + fmt(s * s) + '</td></tr>'; });
+    $('rows').innerHTML = body;
+    $('rows-total').textContent = fmt(tot);
+  }
+
+  function solve() {
+    reset();
+    var P = puzzle(), N = P.N;
+    var hints = [];
+    activeFacts().forEach(function (f) { f.cells.forEach(function (q) { hints.push({ type: f.type, cell: q[0] * N + q[1], size: f.size }); }); });
+    var job = { puzzle: mode, K: mode === 'main' ? 12 : 5, hints: hints, budget: 2000, timeLimit: TIME_LIMIT };
+    lockUi(true);
+    setStatus('run', 'Searching');
+    started = Date.now();
+    tick = setInterval(function () { setStats(null, null, Date.now() - started); }, 100);
+    try {
+      var harness = [
+        'self.onmessage = function (e) {',
+        '  var d = e.data, last = 0, scan = -1, snapFn = null, t0 = Date.now();',
+        '  function post(force) {',
+        '    var now = Date.now(); if (!force && now - last < 80) return; last = now;',
+        '    var s = snapFn ? snapFn() : null;',
+        '    self.postMessage({ type: "progress", snap: s, scan: scan, ms: now - t0 });',
+        '  }',
+        '  var solver = self.MetricSolver.createSolver(self.MetricCore.PUZZLES[d.puzzle], { K: d.K, hints: d.hints, budget: d.budget,',
+        '    onTick: function (v) { scan = v; post(false); },',
+        '    onProgress: function (fn) { snapFn = fn; post(false); } });',
+        '  var out = solver.run(d.timeLimit);',
+        '  self.postMessage({ type: "done", result: out.result, ms: out.ms, stats: out.stats, owner: out.solution ? out.solution.owner : null });',
+        '};'
+      ].join('\n');
+      var url = URL.createObjectURL(new Blob([ENGINE_SRC, '\n', harness], { type: 'text/javascript' }));
+      worker = new Worker(url);
+      worker.onmessage = function (e) {
+        var m = e.data;
+        if (m.type === 'progress') {
+          if (m.snap) { owner = m.snap.owner; cap = m.snap.cap; setStats(m.snap.stats, m.snap.filled, Date.now() - started); }
+          scan = m.scan;
+          var label = scan >= 0 ? 'Examining ' + rc((scan / N) | 0, scan % N) : 'Searching';
+          $('status-text').textContent = label;
+          paint();
+        } else if (m.type === 'done') finish(m);
+      };
+      worker.onerror = function () { worker = null; runInPage(job); };
+      worker.postMessage(job);
+    } catch (err) {
+      runInPage(job);
+    }
+  }
+
+  // Fallback when background workers are blocked: run on the page itself.
+  function runInPage(job) {
+    if (worker) { worker.terminate(); worker = null; }
+    setStatus('run', 'Searching on this page');
+    $('note').textContent = 'Background workers are unavailable here, so the page will pause until the search finishes.';
+    setTimeout(function () {
+      var s = Solver.createSolver(Core.PUZZLES[job.puzzle], { K: job.K, hints: job.hints, budget: job.budget });
+      var out = s.run(job.timeLimit);
+      finish({ result: out.result, ms: out.ms, stats: out.stats, owner: out.solution ? out.solution.owner : null });
+    }, 60);
+  }
+
+  function stop() {
+    if (!running) return;
+    if (worker) { worker.terminate(); worker = null; }
+    lockUi(false); clearInterval(tick);
+    setStatus('err', 'Stopped'); scan = -1; paint();
+  }
+
+  function pick(m) {
+    if (running || m === mode) return;
+    mode = m;
+    $('pick-main').setAttribute('aria-pressed', m === 'main');
+    $('pick-example').setAttribute('aria-pressed', m === 'example');
+    $('facts-card').hidden = m !== 'main';
+    buildBoard(); reset();
+  }
+
+  function buildFacts() {
+    $('facts').innerHTML = FACTS.map(function (f) {
+      return '<li><label for="fact-' + f.id + '"><input type="checkbox" id="fact-' + f.id + '" checked>' +
+        '<span class="t">' + f.text + '</span>' +
+        '<span class="w">' + f.why + '</span></label></li>';
+    }).join('');
+    document.querySelectorAll('#facts input').forEach(function (x) { x.addEventListener('change', function () { if (!running) { if (result) reset(); else paint(); } }); });
+  }
+
+  $('solve').addEventListener('click', solve);
+  $('stop').addEventListener('click', stop);
+  $('reset').addEventListener('click', function () { if (!running) reset(); });
+  $('pick-main').addEventListener('click', function () { pick('main'); });
+  $('pick-example').addEventListener('click', function () { pick('example'); });
+  $('show-d').addEventListener('change', paint);
+
+  buildFacts();
+  buildBoard();
+  reset();
+})();
+</script>
+
+</body></html>
