@@ -198,6 +198,18 @@ h3 { margin: 0; font-size: 20px; font-weight: 600; letter-spacing: -0.02em; line
 .vol-chart .p circle { fill: var(--surface); stroke: var(--accent); stroke-width: 1.5; }
 .vol-chart text { font-family: var(--font-sans); font-size: 9px; font-weight: 500; fill: var(--muted); }
 
+.scrub { display: grid; gap: 10px; width: min(100%, 420px); }
+.scrub-svg { width: 100%; height: auto; display: block; font-family: var(--font-sans); }
+.scrub-svg .pg { fill: var(--surface); stroke: var(--line-strong); }
+.scrub-svg .rule { stroke: var(--line); }
+.scrub-svg .t { font-size: 9px; font-weight: 600; fill: var(--ink); }
+.scrub-svg .k { font-size: 7px; font-weight: 500; fill: var(--muted); }
+.scrub-svg .v { font-size: 8.5px; fill: var(--ink); font-variant-numeric: tabular-nums; }
+.scrub-svg .hl { fill: var(--accent-tint); }
+.scrub-svg .bar { fill: var(--ink); }
+.scrub-svg .arr { fill: none; stroke: var(--accent); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.scrub .readout { justify-content: flex-start; }
+
 .sbm { display: grid; gap: 10px; width: min(100%, 420px); }
 .sbm-tabs { display: flex; flex-wrap: wrap; gap: 4px; font-size: 13px; font-weight: 500; line-height: 1; color: var(--muted); }
 .sbm-tabs span { padding: 6px 9px; border-radius: 6px; white-space: nowrap; }
@@ -530,6 +542,21 @@ h3 { margin: 0; font-size: 20px; font-weight: 600; letter-spacing: -0.02em; line
           <h3>ETF Research &amp; Short Borrow Monitor</h3>
           <p>Research site for ETFs and short selling. It measures about 5,800 US-listed ETFs against their closest benchmark for alpha, beta and fees, and uses Interactive Brokers borrow data to show what each fund or stock costs to short and whether the short is worth it.</p>
           <a class="link-out" href="https://short-borrow-monitor.onrender.com/etf" target="_blank" rel="noopener">Try it <span aria-hidden="true">↗</span></a>
+        </div>
+      </article>
+
+      <article class="build wide">
+        <div class="viz">
+          <div class="scrub">
+            <div class="fee-head"><span>Scanned document</span><span>Safe to upload</span></div>
+            <svg class="scrub-svg" viewBox="0 0 320 140" role="img" aria-label="Illustration of a tax form before and after scrubbing: the name, Social Security number and address are blacked out while the dollar amounts stay readable"><rect class="pg" x="6" y="3" width="132" height="134" rx="5"/><text class="t" x="18" y="21">Tax form</text><line class="rule" x1="18" x2="126" y1="28" y2="28"/><text class="k" x="18" y="40">Name</text><rect class="hl" x="15" y="42" width="57" height="11" rx="2"/><text class="v" x="18" y="50.5">Jordan Avery</text><text class="k" x="18" y="60">SSN</text><rect class="hl" x="15" y="62" width="57" height="11" rx="2"/><text class="v" x="18" y="70.5">000-12-3456</text><text class="k" x="18" y="80">Address</text><rect class="hl" x="15" y="82" width="69" height="11" rx="2"/><text class="v" x="18" y="90.5">14 Elm St, Apt 2</text><text class="k" x="18" y="100">Wages</text><text class="v" x="18" y="110.5">84,210.00</text><text class="k" x="18" y="120">Tax withheld</text><text class="v" x="18" y="130.5">12,304.50</text><path class="arr" d="M148 70 H170 M163 63 L170 70 L163 77"/><rect class="pg" x="182" y="3" width="132" height="134" rx="5"/><text class="t" x="194" y="21">Tax form</text><line class="rule" x1="194" x2="302" y1="28" y2="28"/><text class="k" x="194" y="40">Name</text><rect class="bar" x="194" y="43.5" width="51" height="8" rx="1.5"/><text class="k" x="194" y="60">SSN</text><rect class="bar" x="194" y="63.5" width="51" height="8" rx="1.5"/><text class="k" x="194" y="80">Address</text><rect class="bar" x="194" y="83.5" width="63" height="8" rx="1.5"/><text class="k" x="194" y="100">Wages</text><text class="v" x="194" y="110.5">84,210.00</text><text class="k" x="194" y="120">Tax withheld</text><text class="v" x="194" y="130.5">12,304.50</text></svg>
+            <div class="readout"><span>OCR <b>Tesseract</b></span><span>Tests <b>84</b></span><span>Files <b class="acc">Stay local</b></span></div>
+          </div>
+        </div>
+        <div class="build-body">
+          <h3>PDF Scrubber: Tax Document Redactor</h3>
+          <p>Desktop app that uses Tesseract OCR to find and remove personal information from tax documents, so they can be uploaded to AI tools safely.</p>
+          <a class="link-out" href="https://github.com/charleslhobson/pdf-scrubber" target="_blank" rel="noopener">View code <span aria-hidden="true">↗</span></a>
         </div>
       </article>
 
