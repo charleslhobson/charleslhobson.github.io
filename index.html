@@ -206,11 +206,12 @@ h3 { margin: 0; font-size: 20px; font-weight: 600; letter-spacing: -0.02em; line
 .sbm-table th, .sbm-table td { padding: 7px 10px; text-align: right; white-space: nowrap; }
 .sbm-table th { font-weight: 500; color: var(--muted); }
 .sbm-table td { border-top: 1px solid var(--line); }
-.sbm-table th:first-child, .sbm-table td:first-child { text-align: left; }
+.sbm-table th:first-child, .sbm-table td:first-child, .sbm-table th:nth-child(2), .sbm-table td:nth-child(2) { text-align: left; }
+.sbm-table td:nth-child(2) { color: var(--muted); }
+.sbm-bar { display: inline-block; height: 6px; margin-right: 6px; border-radius: 2px; background: var(--accent); vertical-align: 1px; }
 .sbm-table td:first-child { font-weight: 600; }
 .sbm .readout { justify-content: flex-start; }
 @media (max-width: 760px) { .sbm-table th, .sbm-table td { padding: 7px 6px; } }
-@media (max-width: 380px) { .sbm-table th:nth-child(3), .sbm-table td:nth-child(3) { display: none; } }
 
 .rig { display: grid; gap: 10px; width: min(100%, 420px); }
 .rig-svg { width: 100%; height: auto; display: block; }
@@ -535,15 +536,29 @@ h3 { margin: 0; font-size: 20px; font-weight: 600; letter-spacing: -0.02em; line
       <article class="build wide">
         <div class="viz">
           <div class="sbm">
-            <div class="sbm-tabs" aria-label="The site's four tools"><span>Stocks</span><span>ETFs</span><span class="on">Short screen</span><span>Leveraged</span></div>
-            <table class="sbm-table" aria-label="Snapshot of the ETF short screen on 16 November 2026: each fund's quoted borrow fee, its beta-adjusted break-even fee and the verdict"><thead><tr><th>ETF</th><th>Quoted</th><th>Break-even</th><th>Verdict</th></tr></thead><tbody><tr><td>TSLL</td><td>8.21%</td><td>67.5%</td><td><span class="note hot">Worthwhile</span></td></tr><tr><td>NVDL</td><td>4.42%</td><td>−29.9%</td><td><span class="note">Not worthwhile</span></td></tr><tr><td>CONL</td><td>7.00%</td><td>102.9%</td><td><span class="note hot">Worthwhile</span></td></tr><tr><td>MSTU</td><td>10.95%</td><td>134.4%</td><td><span class="note hot">Worthwhile</span></td></tr></tbody></table>
-            <div class="readout"><span>Securities <b>~20,000</b></span><span>ETFs <b>~5,800</b></span><span>Borrow data <b class="acc">15 min</b></span></div>
+            <div class="sbm-tabs" aria-label="The site's four tools"><span class="on">ETFs</span><span>Stocks</span><span>Short screen</span><span>Leveraged</span></div>
+            <table class="sbm-table" aria-label="Snapshot of the ETF explorer on 16 November 2026: each fund's closest benchmark, its alpha per year against that benchmark over three years, and what it costs to borrow"><thead><tr><th>ETF</th><th>Benchmark</th><th>Alpha / yr</th><th>Borrow fee</th></tr></thead><tbody><tr><td>QQQ</td><td>QQQM</td><td>−0.26%</td><td><span class="sbm-bar" style="width:2px"></span>0.30%</td></tr><tr><td>JEPI</td><td>SPY</td><td>−0.09%</td><td><span class="sbm-bar" style="width:5px"></span>1.21%</td></tr><tr><td>BITO</td><td>IBIT</td><td>−5.25%</td><td><span class="sbm-bar" style="width:11px"></span>2.46%</td></tr><tr><td>TSLL</td><td>TSLA</td><td>−12.34%</td><td><span class="sbm-bar" style="width:36px"></span>8.21%</td></tr></tbody></table>
+            <div class="readout"><span>ETFs <b>~5,800</b></span><span>Stocks <b>~20,000</b></span><span>Borrow data <b class="acc">15 min</b></span></div>
           </div>
         </div>
         <div class="build-body">
-          <h3>Short Borrow Monitor: Stock &amp; ETF Short‑Selling Research</h3>
-          <p>Research site built on Interactive Brokers borrow data. It screens about 20,000 stocks by borrow fee and availability, benchmarks every US-listed ETF, and compares each ETF's quoted borrow fee with its theoretical and break-even fees.</p>
+          <h3>ETF Research &amp; Short Borrow Monitor</h3>
+          <p>Research site for ETFs and short selling. It measures about 5,800 US-listed ETFs against their closest benchmark for alpha, beta and fees, and uses Interactive Brokers borrow data to show what each fund or stock costs to short and whether the short is worth it.</p>
           <a class="link-out" href="https://short-borrow-monitor.onrender.com/etf" target="_blank" rel="noopener">Try it <span aria-hidden="true">↗</span></a>
+        </div>
+      </article>
+
+      <article class="build wide">
+        <div class="viz" aria-label="Illustrative 13 by 13 poker starting-hand grid">
+          <div class="poker">
+            <div class="range" id="range-grid"></div>
+            <div class="legend"><span><i class="r"></i>Raise</span><span><i class="c"></i>Call</span><span><i></i>Fold</span></div>
+          </div>
+        </div>
+        <div class="build-body">
+          <h3>GTO Poker Trainer</h3>
+          <p>Benchmarks every decision against game-theory-optimal strategy and pinpoints recurring leaks.</p>
+          <a class="link-out" href="projects/range-lab" target="_blank" rel="noopener">Try it <span aria-hidden="true">↗</span></a>
         </div>
       </article>
 
@@ -565,20 +580,6 @@ h3 { margin: 0; font-size: 20px; font-weight: 600; letter-spacing: -0.02em; line
           <h3>Blackjack Card-Counting Trainer</h3>
           <p>Drills Hi-Lo true counts, basic strategy and count-based deviations with real-time feedback.</p>
           <a class="link-out" href="projects/hi-lo-trainer" target="_blank" rel="noopener">Try it <span aria-hidden="true">↗</span></a>
-        </div>
-      </article>
-
-      <article class="build wide">
-        <div class="viz" aria-label="Illustrative 13 by 13 poker starting-hand grid">
-          <div class="poker">
-            <div class="range" id="range-grid"></div>
-            <div class="legend"><span><i class="r"></i>Raise</span><span><i class="c"></i>Call</span><span><i></i>Fold</span></div>
-          </div>
-        </div>
-        <div class="build-body">
-          <h3>GTO Poker Trainer</h3>
-          <p>Benchmarks every decision against game-theory-optimal strategy and pinpoints recurring leaks.</p>
-          <a class="link-out" href="projects/range-lab" target="_blank" rel="noopener">Try it <span aria-hidden="true">↗</span></a>
         </div>
       </article>
 
